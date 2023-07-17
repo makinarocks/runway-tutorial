@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Runway emotion detection serving</title>
+	<link rel="stylesheet" href="static/base.css">
+	<style>
+		.target-text {
+			font-size: 13px;
+			color: #E2E2E9;
+			margin: 16px 0;
+		}
+		output {
+			padding: 8px 12px;
+			border-radius: 4px;
+			color: #fff;
+			font-size: 15px;
+		}
+		output.pass {
+			background-color: var(--feedback-pass);
+		}
+		output.fail {
+			background-color: var(--feedback-fail);
+		}
+	</style>
+</head>
+<body>
+	<img id="runway-logo" src="static/runway.svg" alt="Runway">
+
+	<div class="wrap">
+		<h1>Emotion Detection <span>(by API Serving)</span></h1>
+
+		<form action="./emotion-demo.html" method="POST">
+		<p class="control">
+			<label>
+				API endpoint
+				<input type="text" name="endpoint" value= required />
+			</label>
+		</p>
+		<p class="control">
+			<label>
+				API token
+				<input type="text" name="token" required />
+			</label>
+		</p>
+		<p class="control">
+			<label>
+				Target text
+				<textarea type="text" name="target" required></textarea>
+			</label>
+		</p>
+			<p class="buttons">
+				<button class="primary">Detect</button>
+			</p>
+		</form>
+
+		<div class="result">
+			<p class="message"></p>
+
+			<p class="target-text"></p>
+
+			<output></output>
+
+			<svg class="loading" width="60" height="60" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+				<circle cx="10" cy="10" r="9" fill="none" stroke="#6c79f9" strokeWidth="2" strokeLinecap="round">
+					<animateTransform attributeName="transform" attributeType="XML" type="rotate" from="0 10 10" to="360 10 10" dur="2s" repeatCount="indefinite" />
+					<animate attributeName="stroke-dasharray" attributeType="XML" values="1, 55.5; 40, 55.5; 40, 55.5" dur="1.5s" repeatCount="indefinite" />
+					<animate attributeName="stroke-dashoffset" attributeType="XML" values="0; -15.5; -55.5" dur="1.5s" repeatCount="indefinite" />
+				</circle>
+			</svg>
+		</div>
+	</div>
+	<script src="./static/util.js"></script>
+	<script>
+		async function onSubmit(event) {
+			event.preventDefault();
+
+			const data = document.querySelector('[name=target]').value;
+
+			document.querySelector('.result').classList.add('on');
+
+			clearRender();
+			showLoading();
+
+			const result = await getInference(data);
+
+			hideLoading();
+
+			if (result) {
+				document.querySelector('.target-text').innerHTML = data;
+				render(result);
+			}
+		}
+
+		function getInference(data) {
+			const url = document.querySelector('[name=endpoint]').value;
+			const token = document.querySelector('[name=token]').value;
+
+			return fetch(url, {
+				headers: {
+					'Content-Type': 'application/json',
+					authorization: `bearer ${token}`,
+				},
+				method: 'POST',
+				body: JSON.stringify({"parameters": {"content_type": "pd"}, "inputs": [{"name": "text", "shape": [1], "datatype": "BYTES", "data": [data]}]}),
+			}).then(async res => {
+				if (!res.ok) {
+					const result = await res.json();
+
+					// FIXME: RWAY-2556
+					if (res.status === 401) {
+						throw new Error(result);
+					}
+
+					// FIXME: RWAY-2556
+					const json = new Function(`return ${result}`)()
+
+					throw new Error(json.message || json);
+				}
+
+				return res.json();
+			}).catch(err => {
+				showMessage(err, 'fail');
+			});
+		}
+
+		function clearRender() {
+			hideMessage();
+			document.querySelector('.target-text').innerHTML = '';
+			document.querySelector('output').innerHTML = '';
+			document.querySelector('output').className = '';
+		}
+
+		function render(result) {
+			if (!result.outputs) {
+				return;
+			}
+
+			const label = result.outputs[0].data[0];
+			const score = result.outputs[1].data[0];
+
+			document.querySelector('output').innerHTML = `${label} (${score})`;
+			document.querySelector('output').className = `${label === 'POSITIVE' ? 'pass' : 'fail'}`;
+
+			showMessage(`Detect success.`, 'pass');
+		}
+
+		const form = document.querySelector('form');
+		form.addEventListener('submit', onSubmit);
+	</script>
+</body>
+</html>
