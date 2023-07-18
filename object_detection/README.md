@@ -50,9 +50,9 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
 ## 패키지 설치
 
 1. 튜토리얼에서 사용할 패키지를 설치합니다.
-   ```python
-   !pip install torch torchvision Pillow seaborn
-   ```
+    ```python
+    !pip install torch torchvision Pillow seaborn
+    ```
 
 ## 데이터
 
@@ -70,20 +70,20 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
 
 1. 샘플 데이터 하나를 추출 후 이미지를 확인합니다.
 
-   ```python
-   from pathlib import Path
-   from matplotlib.pyplot import imshow
-   from PIL import Image
+       ```python
+       from pathlib import Path
+       from matplotlib.pyplot import imshow
+       from PIL import Image
 
 
-   sample_image_path = Path(RUNWAY_DATA_PATH).parent / "000000000139.jpg"
-   image_filename_list = [sample_image_path]
+    sample_image_path = Path(RUNWAY_DATA_PATH).parent / "000000000139.jpg"
+    image_filename_list = [sample_image_path]
 
-   img = Image.open(sample_image_path)
-   imshow(img)
-   ```
+    img = Image.open(sample_image_path)
+    imshow(img)
+    ```
 
-   ![sample image](image/sample_image.png)
+    ![sample image](image/sample_image.png)
 
 ## 학습
 
@@ -91,105 +91,105 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
 
 1. 모델을 학습하기 위해서 pytorch 에서 제공하는 Dataset 을 생성합니다.
 
-   ```python
-   from PIL import Image
-   from pathlib import Path
-   from pycocotools.coco import COCO
-   import torch
-   from torch.utils.data import Dataset
-   from torchvision import transforms as T
+    ```python
+    from PIL import Image
+    from pathlib import Path
+    from pycocotools.coco import COCO
+    import torch
+    from torch.utils.data import Dataset
+    from torchvision import transforms as T
 
 
-   def get_transforms():
-       transforms = []
-       transforms.append(T.ToTensor())
-       return T.Compose(transforms)
+    def get_transforms():
+        transforms = []
+        transforms.append(T.ToTensor())
+        return T.Compose(transforms)
 
 
-   def collate_fn(batch):
-       return tuple(zip(*batch))
+    def collate_fn(batch):
+        return tuple(zip(*batch))
 
 
-   class COCODataset(Dataset):
-       def __init__(self, data_root, coco, transforms=None):
-           self.data_root = Path(data_root)
-           self.transforms = transforms
-           #pre-loaded variables
-           self.coco = coco
-           self.ids = list(sorted(self.coco.imgs.keys()))
-           
-       def __getitem__(self, index):
-           # refer to https://pytorch.org/tutorials/intermediate/torchvision_tutorial.html
-           img_id = self.ids[index]
-           ann_ids = self.coco.getAnnIds(imgIds=img_id)
-           ann = self.coco.loadAnns(ann_ids)
-           img_path = self.data_root / self.coco.loadImgs(img_id)[0]["file_name"]
-           img = Image.open(img_path)
-           num_objs = len(ann)
-           
-           boxes = []
-           for i in range(num_objs):
-               boxes.append([
-                   ann[i]["bbox"][0],
-                   ann[i]["bbox"][1],
-                   ann[i]["bbox"][2] + ann[i]["bbox"][0],
-                   ann[i]["bbox"][3] + ann[i]["bbox"][1],
-               ])
+    class COCODataset(Dataset):
+        def __init__(self, data_root, coco, transforms=None):
+            self.data_root = Path(data_root)
+            self.transforms = transforms
+            #pre-loaded variables
+            self.coco = coco
+            self.ids = list(sorted(self.coco.imgs.keys()))
+            
+        def __getitem__(self, index):
+            # refer to https://pytorch.org/tutorials/intermediate/torchvision_tutorial.html
+            img_id = self.ids[index]
+            ann_ids = self.coco.getAnnIds(imgIds=img_id)
+            ann = self.coco.loadAnns(ann_ids)
+            img_path = self.data_root / self.coco.loadImgs(img_id)[0]["file_name"]
+            img = Image.open(img_path)
+            num_objs = len(ann)
+            
+            boxes = []
+            for i in range(num_objs):
+                boxes.append([
+                    ann[i]["bbox"][0],
+                    ann[i]["bbox"][1],
+                    ann[i]["bbox"][2] + ann[i]["bbox"][0],
+                    ann[i]["bbox"][3] + ann[i]["bbox"][1],
+                ])
 
-           areas = []
-           for i in range(num_objs):
-               areas.append(ann[i]["area"])
-           
-           target = {
-               "boxes": torch.as_tensor(boxes, dtype=torch.float32),
-               "labels": torch.ones((num_objs,), dtype=torch.int64),
-               "image_id": torch.tensor([img_id]),
-               "area": torch.as_tensor(areas, dtype=torch.float32),
-               "iscrowd": torch.zeros((num_objs,), dtype=torch.int64),
-           }
-           
-           # transform image
-           if self.transforms is not None:
-               img = self.transforms(img)
-           
-           return img, target
+            areas = []
+            for i in range(num_objs):
+                areas.append(ann[i]["area"])
+            
+            target = {
+                "boxes": torch.as_tensor(boxes, dtype=torch.float32),
+                "labels": torch.ones((num_objs,), dtype=torch.int64),
+                "image_id": torch.tensor([img_id]),
+                "area": torch.as_tensor(areas, dtype=torch.float32),
+                "iscrowd": torch.zeros((num_objs,), dtype=torch.int64),
+            }
+            
+            # transform image
+            if self.transforms is not None:
+                img = self.transforms(img)
+            
+            return img, target
 
-       def __len__(self):
-           return len(self.ids)
-   ```
+        def __len__(self):
+            return len(self.ids)
+    ```
 2. 선언한 데이터를 이용해 데이터 로더를 생성합니다.
 
-   ```python
-   from torch.utils.data import DataLoader
+    ```python
+    from torch.utils.data import DataLoader
 
-   # Define Train dataset
-   data_root = Path(RUNWAY_DATA_PATH).parent
-   dataset = COCODataset(data_root, coco, get_transforms())
+    # Define Train dataset
+    data_root = Path(RUNWAY_DATA_PATH).parent
+    dataset = COCODataset(data_root, coco, get_transforms())
 
-   data_loader = DataLoader(
-       dataset,
-       batch_size=2,
-       shuffle=True,
-       num_workers=4,
-       collate_fn=collate_fn
-   )
-   ```
+    data_loader = DataLoader(
+        dataset,
+        batch_size=2,
+        shuffle=True,
+        num_workers=4,
+        collate_fn=collate_fn
+    )
+    ```
 
 ## 모델 선언
 
 1. 학습에 사용할 모델을 선언합니다. 튜토리얼에서는 pytorch 의 `fasterrcnn_resnet50_fpn` 모델을 사용합니다.
 
-   ```python
-   import torch
-   from torchvision.models.detection import fasterrcnn_resnet50_fpn
+    ```python
+    import torch
+    from torchvision.models.detection import fasterrcnn_resnet50_fpn
 
-   # Define local variables
-   print(torch.cuda.is_available())
-   device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+    # Define local variables
+    print(torch.cuda.is_available())
+    device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
-   # Define training model
-   model = fasterrcnn_resnet50_fpn(weights="DEFAULT").to(device)
-   ```
+    # Define training model
+    model = fasterrcnn_resnet50_fpn(weights="DEFAULT").to(device)
+    ```
 
 ## 모델 학습
 
@@ -202,28 +202,28 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
 1. 모델을 학습할 Epoch 을 설정할 수 있도록 Link 파라미터로 N_EPOCHS 에 1을 등록합니다.
 2. 선언한 모델을 위에서 만든 데이터 로더를 통해 학습합니다.
 
-   ```python
-   import torch.optim as optim
+    ```python
+    import torch.optim as optim
 
 
-   params = [p for p in model.parameters() if p.requires_grad]
-   optimizer = optim.SGD(params, lr=1e-5)
+    params = [p for p in model.parameters() if p.requires_grad]
+    optimizer = optim.SGD(params, lr=1e-5)
 
-   model.train()
-   for epoch in range(N_EPOCHS):
-       for imgs, annotations in data_loader:
-           imgs = list(img.to(device) for img in imgs)
-           annotations = [{k: v.to(device) for k, v in t.items()} for t in annotations]
-           loss_dict = model(imgs, annotations)
-           losses = sum(loss for loss in loss_dict.values())
+    model.train()
+    for epoch in range(N_EPOCHS):
+        for imgs, annotations in data_loader:
+            imgs = list(img.to(device) for img in imgs)
+            annotations = [{k: v.to(device) for k, v in t.items()} for t in annotations]
+            loss_dict = model(imgs, annotations)
+            losses = sum(loss for loss in loss_dict.values())
 
-           optimizer.zero_grad()
-           losses.backward()
-           optimizer.step()
+            optimizer.zero_grad()
+            losses.backward()
+            optimizer.step()
 
-   model.eval()
-   torch.cuda.empty_cache()
-   ```
+    model.eval()
+    torch.cuda.empty_cache()
+    ```
 
 ## 모델 추론
 
@@ -231,127 +231,127 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
 
 1. 학습된 모델을 서빙할 수 있도록 ModelWrapper를 작성합니다.
 
-   ```python
-   import io
-   import base64
+    ```python
+    import io
+    import base64
 
-   import torch
-   import pandas as pd
-   import numpy as np
-   from torchvision import transforms
-   from PIL import Image
+    import torch
+    import pandas as pd
+    import numpy as np
+    from torchvision import transforms
+    from PIL import Image
 
 
-   class ModelWrapper:
-       def __init__(self, model, device):
-           self.model = model
-           self.device = device
+    class ModelWrapper:
+        def __init__(self, model, device):
+            self.model = model
+            self.device = device
 
-       def bytesarray_to_tensor(self, bytes_array: str):
-           # input : "utf-8" decoded bytes_array
-           encoded_bytes_array = bytes_array.encode("utf-8")
-           # decode encoded_bytes_array with ascii code
-           img_64_decode = base64.b64decode(encoded_bytes_array)
-           # get image file and transform to tensor
-           image_from_bytes = Image.open(io.BytesIO(img_64_decode))
-           return transforms.ToTensor()(image_from_bytes).to(self.device)
+        def bytesarray_to_tensor(self, bytes_array: str):
+            # input : "utf-8" decoded bytes_array
+            encoded_bytes_array = bytes_array.encode("utf-8")
+            # decode encoded_bytes_array with ascii code
+            img_64_decode = base64.b64decode(encoded_bytes_array)
+            # get image file and transform to tensor
+            image_from_bytes = Image.open(io.BytesIO(img_64_decode))
+            return transforms.ToTensor()(image_from_bytes).to(self.device)
 
-       def tensor_to_bytesarray(self, tensor: torch.Tensor):
-           tensor_bytes_array = tensor.detach().cpu().numpy().tobytes()
-           tensor_64_encode = base64.b64encode(tensor_bytes_array)
-           bytes_array = tensor_64_encode.decode("utf-8")
-           return bytes_array
+        def tensor_to_bytesarray(self, tensor: torch.Tensor):
+            tensor_bytes_array = tensor.detach().cpu().numpy().tobytes()
+            tensor_64_encode = base64.b64encode(tensor_bytes_array)
+            bytes_array = tensor_64_encode.decode("utf-8")
+            return bytes_array
 
-       @torch.no_grad()
-       def predict(self, df):
-           self.model.eval()
-           # df is 1-d dataframe with bytes array
-           tensor_list = list((map(self.bytesarray_to_tensor, df.squeeze(axis=1).to_list())))
-           pred = self.model(tensor_list)
-           result = pd.DataFrame(pred).applymap(lambda x: self.tensor_to_bytesarray(x))
-           torch.cuda.empty_cache()
-           return result
+        @torch.no_grad()
+        def predict(self, df):
+            self.model.eval()
+            # df is 1-d dataframe with bytes array
+            tensor_list = list((map(self.bytesarray_to_tensor, df.squeeze(axis=1).to_list())))
+            pred = self.model(tensor_list)
+            result = pd.DataFrame(pred).applymap(lambda x: self.tensor_to_bytesarray(x))
+            torch.cuda.empty_cache()
+            return result
 
-       def revert_predict_to_array(self, pred):
-           pred_decode = pred.applymap(base64.b64decode)
-           for key in pred_decode.keys():
-               if key == "labels":
-                   pred_decode[key] = pred_decode[key].apply(lambda x: np.frombuffer(x, dtype=int))
-               elif key == "boxes":
-                   pred_decode[key] = pred_decode[key].apply(lambda x: np.frombuffer(x, dtype=np.float32).reshape(-1, 4))
-               else:
-                   pred_decode[key] = pred_decode[key].apply(lambda x: np.frombuffer(x, dtype=np.float32))
-           return pred_decode
-   ```
+        def revert_predict_to_array(self, pred):
+            pred_decode = pred.applymap(base64.b64decode)
+            for key in pred_decode.keys():
+                if key == "labels":
+                    pred_decode[key] = pred_decode[key].apply(lambda x: np.frombuffer(x, dtype=int))
+                elif key == "boxes":
+                    pred_decode[key] = pred_decode[key].apply(lambda x: np.frombuffer(x, dtype=np.float32).reshape(-1, 4))
+                else:
+                    pred_decode[key] = pred_decode[key].apply(lambda x: np.frombuffer(x, dtype=np.float32))
+            return pred_decode
+    ```
 
 2. 학습이 완료된 모델을 ModelWrapper 로 모델을 랩핑합니다.
 
-   ```python
-   serve_model = ModelWrapper(model=model, device=device)
-   ```
+    ```python
+    serve_model = ModelWrapper(model=model, device=device)
+    ```
 
 ### 샘플 이미지 추론
 
 1. Runway 에서는 API 서빙을 위한 입력과 출력을 Dataframe 형식만 지원하고 있습니다. 이를 위해서 입력 이미지를 bytearray 로 변환해주는 코드를 작성합니다.
 
-   ```python
-   import base64
-   import pandas as pd
+    ```python
+    import base64
+    import pandas as pd
 
 
-   def convert_image_to_bytearray(img_binary):
-       image_64_encode = base64.b64encode(img_binary)
-       bytes_array = image_64_encode.decode("utf-8")
-       return bytes_array
+    def convert_image_to_bytearray(img_binary):
+        image_64_encode = base64.b64encode(img_binary)
+        bytes_array = image_64_encode.decode("utf-8")
+        return bytes_array
 
 
-   def images_to_bytearray_df(image_filename_list: list):
-       df_list = []
-       for img_filename in image_filename_list:
-           image = open(img_filename, "rb")  # open binary file in read mode
-           image_read = image.read()
-           df_list.append(convert_image_to_bytearray(image_read))
-       return pd.DataFrame(df_list, columns=["image_data"])
-   ```
+    def images_to_bytearray_df(image_filename_list: list):
+        df_list = []
+        for img_filename in image_filename_list:
+            image = open(img_filename, "rb")  # open binary file in read mode
+            image_read = image.read()
+            df_list.append(convert_image_to_bytearray(image_read))
+        return pd.DataFrame(df_list, columns=["image_data"])
+    ```
 
 2. 위에서 사용한 데이터와 변환 코드를 이용해 `input_sample` 을 생성하고 랩핑된 모델을 이용해 추론합니다.
 
-   ```python
-   from PIL import ImageDraw
-   import seaborn as sns
+    ```python
+    from PIL import ImageDraw
+    import seaborn as sns
 
-   # make input sample
-   input_sample = images_to_bytearray_df(image_filename_list)
+    # make input sample
+    input_sample = images_to_bytearray_df(image_filename_list)
 
-   # For inference
-   pred = serve_model.predict(input_sample)
-   predictions = serve_model.revert_predict_to_array(pred)
+    # For inference
+    pred = serve_model.predict(input_sample)
+    predictions = serve_model.revert_predict_to_array(pred)
 
-   # Load Categories
-   cats = dataset.coco.loadCats(dataset.coco.getCatIds())
-   cats_palette = sns.color_palette("Set2", len(cats)).as_hex()
-   for idx in range(len(cats)):
-       cats[idx]["color"] = cats_palette[idx]
+    # Load Categories
+    cats = dataset.coco.loadCats(dataset.coco.getCatIds())
+    cats_palette = sns.color_palette("Set2", len(cats)).as_hex()
+    for idx in range(len(cats)):
+        cats[idx]["color"] = cats_palette[idx]
 
-   # Draw inference results
-   img = Image.open(sample_image_path)
-   for idx in range(len(predictions["boxes"][0])):
-       label = predictions["labels"][0][idx]
-       score = predictions["scores"][0][idx]
-       box = predictions["boxes"][0][idx]
-       # cat = cats[label]
-       cat = dataset.coco.loadCats(label.item())[0]
+    # Draw inference results
+    img = Image.open(sample_image_path)
+    for idx in range(len(predictions["boxes"][0])):
+        label = predictions["labels"][0][idx]
+        score = predictions["scores"][0][idx]
+        box = predictions["boxes"][0][idx]
+        # cat = cats[label]
+        cat = dataset.coco.loadCats(label.item())[0]
 
-       if score < 0.9:
-           continue
-       
-       draw = ImageDraw.Draw(img)
-       draw.rectangle(box, outline=cat["color"], width = 3)
-       draw.text(box, cat["name"], cat["color"])
+        if score < 0.9:
+            continue
+        
+        draw = ImageDraw.Draw(img)
+        draw.rectangle(box, outline=cat["color"], width = 3)
+        draw.text(box, cat["name"], cat["color"])
 
-   imshow(img)
-   del draw
-   ```
+    imshow(img)
+    del draw
+    ```
 
 3. 추론 결과를 확인합니다.  
    ![predict result](image/predict_result.png)
@@ -364,11 +364,11 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
 
 1. runway sdk 를 사용해 모델을 저장힙니다.
 
-   ```python Python
-   import runway
+    ```python Python
+    import runway
 
-   runway.log_model(model_name="my-detection-model", model=serve_model, input_samples={"predict": input_sample})
-   ```
+    runway.log_model(model_name="my-detection-model", model=serve_model, input_samples={"predict": input_sample})
+    ```
 
 # 파이프라인 구성 및 저장
 
@@ -379,10 +379,10 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
 1. 파이프라인으로 구성할 코드 셀을 선택하여 컴포넌트로 설정합니다.
 2. 파이프라인으로 구성이 완료되면, 전체 파이프라인을 실행하여 정상 동작 여부를 확인합니다.
 3. 파이프라인의 정상 동작 확인 후, 파이프라인을 Runway에 저장합니다.
-   1. 좌측 패널 영역의 Upload Pipeline을 클릭합니다.
-   2. Pipeline 저장 옵션을 선택합니다.
-      1. 신규 저장의 경우, New Pipeline을 선택합니다.
-      2. 기존 파이프라인의 업데이트일 경우, Version Update를 선택합니다.
-   3. 파이프라인 저장을 위한 값을 입력 후, Save를 클릭합니다.
+    1. 좌측 패널 영역의 Upload Pipeline을 클릭합니다.
+    2. Pipeline 저장 옵션을 선택합니다.
+        1. 신규 저장의 경우, New Pipeline을 선택합니다.
+        2. 기존 파이프라인의 업데이트일 경우, Version Update를 선택합니다.
+    3. 파이프라인 저장을 위한 값을 입력 후, Save를 클릭합니다.
 4. Runway 프로젝트 메뉴에서 Pipeline 페이지로 이동합니다.
 5. 저장한 파이프라인의 이름을 클릭하면 파이프라인 상세 페이지로 진입합니다. 

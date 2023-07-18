@@ -39,9 +39,9 @@ Runway에 포함된 Link를 사용하여 테이블 형식 데이터 세트를 �
 ## 패키지 준비
 
 1. (Optional) 튜토리얼에서 사용할 패키지를 설치합니다. 
-   ```Text Python
-   !pip install sklearn pandas numpy
-   ```
+    ```Text Python
+    !pip install sklearn pandas numpy
+    ```
 
 ## 데이터
 
@@ -55,11 +55,11 @@ Runway에 포함된 Link를 사용하여 테이블 형식 데이터 세트를 �
 2. 생성한 데이터셋을 선택하고 variable 이름을 적습니다.
 3. 코드를 생성하고 Link 컴포넌트로 등록합니다. 
 
-   ```python
-   import pandas as pd
+    ```python
+    import pandas as pd
 
-   df = pd.read_csv(RUNWAY_DATA_PATH)
-   ```
+    df = pd.read_csv(RUNWAY_DATA_PATH)
+    ```
 
 ### 데이터 전처리
 
@@ -67,25 +67,25 @@ Runway에 포함된 Link를 사용하여 테이블 형식 데이터 세트를 �
 
 1. 데이터 세트에 포함된 결측치 값을 제거하고, 학습 특성 데이터 세트와 목표 특성 데이터 세트를 분리합니다.
 
-   ```python
-   #Drop NA data in dataset
-   data_clean= df.dropna()
+    ```python
+    #Drop NA data in dataset
+    data_clean= df.dropna()
 
-   #Select Predictor columns
-   X = df[['cylinders', 'displacement', 'weight', 'acceleration', "origin"]]
+    #Select Predictor columns
+    X = df[['cylinders', 'displacement', 'weight', 'acceleration', "origin"]]
 
-   #Select target column
-   y = df['mpg']
-   ```
+    #Select target column
+    y = df['mpg']
+    ```
 
 2. 데이터셋을 학습용 데이터셋과 테스트용 데이터셋으로 분리합니다.
 
-   ```python
-   from sklearn.model_selection import train_test_split
+    ```python
+    from sklearn.model_selection import train_test_split
 
-   #Split data into training and testing sets
-   X_train, X_valid, y_train, y_valid = train_test_split(X, y, test_size=0.2)
-   ```
+    #Split data into training and testing sets
+    X_train, X_valid, y_train, y_valid = train_test_split(X, y, test_size=0.2)
+    ```
 
 ## 모델
 
@@ -93,53 +93,53 @@ Runway에 포함된 Link를 사용하여 테이블 형식 데이터 세트를 �
 
 1. 모델 학습을 위한 모델 클래스를 작성합니다.
 
-   ```python
-   import pandas as pd
-   from sklearn.linear_model import LinearRegression
-   from sklearn.preprocessing import StandardScaler
+    ```python
+    import pandas as pd
+    from sklearn.linear_model import LinearRegression
+    from sklearn.preprocessing import StandardScaler
 
 
-   class RunwayRegressor:
-       def __init__(self):
-           """Initialize."""
-           self.preprocessing = StandardScaler()
-           self.model = LinearRegression()
+    class RunwayRegressor:
+        def __init__(self):
+            """Initialize."""
+            self.preprocessing = StandardScaler()
+            self.model = LinearRegression()
            
-       def fit(self, X, y):
-           """fit model."""
-           X_scaled = self.preprocessing.fit_transform(X)
-           self.model.fit(X_scaled, y)
+        def fit(self, X, y):
+            """fit model."""
+            X_scaled = self.preprocessing.fit_transform(X)
+            self.model.fit(X_scaled, y)
        
-       def predict(self, X):
-           X_scaled = self.preprocessing.transform(X)
-           pred = self.model.predict(X_scaled)
-           pred_df = pd.DataFrame({"mpg_pred": pred})
-           return pred_df
+        def predict(self, X):
+            X_scaled = self.preprocessing.transform(X)
+            pred = self.model.predict(X_scaled)
+            pred_df = pd.DataFrame({"mpg_pred": pred})
+            return pred_df
    ```
 
 ### 모델 학습
 
 1. 선언한 모델 클래스와 학습용 데이터셋을 활용하여, 모델 학습을 수행합니다.
 
-   ```python
-   runway_regressor = RunwayRegressor()
-   runway_regressor.fit(X_train, y_train)
-   ```
+    ```python
+    runway_regressor = RunwayRegressor()
+    runway_regressor.fit(X_train, y_train)
+    ```
 
 2. 학습한 모델의 성능을 확인합니다.
 
-   ```python
-   from sklearn.metrics import mean_squared_error
+    ```python
+    from sklearn.metrics import mean_squared_error
 
-   #Test model on held out test set
-   valid_pred = runway_regressor.predict(X_valid)
+    #Test model on held out test set
+    valid_pred = runway_regressor.predict(X_valid)
 
-   #Mean Squared error on the testing set
-   mse = mean_squared_error(valid_pred, y_valid)
+    #Mean Squared error on the testing set
+    mse = mean_squared_error(valid_pred, y_valid)
 
-   #Print evaluate model score
-   print('Mean Squared Error: {}'.format(mse))
-   ```
+    #Print evaluate model score
+    print('Mean Squared Error: {}'.format(mse))
+    ```
 
 ## 모델 저장
 
@@ -149,26 +149,26 @@ Runway에 포함된 Link를 사용하여 테이블 형식 데이터 세트를 �
 
 1. 모델 학습에 사용한 학습 데이터의 샘플을 생성합니다.
 
-   ```python
-   input_samples = X_train.sample(1)
-   input_samples
-   ```
+    ```python
+    input_samples = X_train.sample(1)
+    input_samples
+    ```
 
 2. 코드 셀의 모델 저장 마법사를 클릭합니다.
 
-  ![model wizard](image/model_save_wizard.png)
+    ![model wizard](image/model_save_wizard.png)
 
 3. 표시되는 입력 필드에 저장할 모델의 표시 이름, 저장할 모델 변수 이름, 저장할 모델의 추론 메소드와 메소드에서 사용한 데이터의 샘플을 입력하고 **Confirm** 버튼을 클릭합니다.  
 
    ```python
-   import runway
+    import runway
 
-   runway.log_model(
-     model_name="runway-regressor",
-     model=runway_regressor,
-     input_samples={"predict": input_samples},
-   )
-   ```
+    runway.log_model(
+      model_name="runway-regressor",
+      model=runway_regressor,
+      input_samples={"predict": input_samples},
+    )
+    ```
 
   ![save model field](image/save_model_field.png)
 
@@ -183,10 +183,10 @@ Runway에 포함된 Link를 사용하여 테이블 형식 데이터 세트를 �
 1. 파이프라인으로 구성할 코드 셀을 선택하여 컴포넌트로 설정합니다.
 2. 파이프라인으로 구성이 완료되면, 전체 파이프라인을 실행하여 정상 동작 여부를 확인합니다.
 3. 파이프라인의 정상 동작 확인 후, 파이프라인을 Runway에 저장합니다.
-   1. 좌측 패널 영역의 Upload Pipeline을 클릭합니다.
-   2. Pipeline 저장 옵션을 선택합니다.
-      1. 신규 저장의 경우, New Pipeline을 선택합니다.
-      2. 기존 파이프라인의 업데이트일 경우, Version Update를 선택합니다.
-   3. 파이프라인 저장을 위한 값을 입력 후, Save를 클릭합니다.
+    1. 좌측 패널 영역의 Upload Pipeline을 클릭합니다.
+    2. Pipeline 저장 옵션을 선택합니다.
+        1. 신규 저장의 경우, New Pipeline을 선택합니다.
+        2. 기존 파이프라인의 업데이트일 경우, Version Update를 선택합니다.
+    3. 파이프라인 저장을 위한 값을 입력 후, Save를 클릭합니다.
 4. Runway 프로젝트 메뉴에서 Pipeline 페이지로 이동합니다.
 5. 저장한 파이프라인의 이름을 클릭하면 파이프라인 상세 페이지로 진입합니다. 
