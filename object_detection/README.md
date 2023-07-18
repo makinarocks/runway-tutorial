@@ -70,10 +70,10 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
 
 1. 샘플 데이터 하나를 추출 후 이미지를 확인합니다.
 
-       ```python
-       from pathlib import Path
-       from matplotlib.pyplot import imshow
-       from PIL import Image
+    ```python
+    from pathlib import Path
+    from matplotlib.pyplot import imshow
+    from PIL import Image
 
 
     sample_image_path = Path(RUNWAY_DATA_PATH).parent / "000000000139.jpg"
