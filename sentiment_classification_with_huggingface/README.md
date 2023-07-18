@@ -1,16 +1,17 @@
 # Sentiment Classification with Huggingface
 
-Runway에 포함된 Link를 사용하여 Huggingface 모델을 학습하고 저장합니다. 작성한 모델 학습 코드를 재학습에 활용하기 위해 파이프라인을 구성하고 저장합니다.
+Runway에 포함된 Link를 사용하여 Huggingface 모델을 학습하고 저장합니다.  
+작성한 모델 학습 코드를 재학습에 활용하기 위해 파이프라인을 구성하고 저장합니다.
 
 > 📘 
 > 
-> 빠른 실행을 위해 아래의 주피터 노트북을 활용할 수 있습니다. 
+> 빠른 실행을 위해 아래의 주피터 노트북을 활용할 수 있습니다.  
+> 아래의 주피터 노트북을 다운로드 받아 실행할 경우, "my-text-model" 이름의 모델이 생성되어 Runway에 저장됩니다.  
+> 해당 모델은 서비스 콘솔의 모델(Model) 페이지에서 확인할 수 있습니다.
 > 
-> 아래의 주피터 노트북을 다운로드 받아 실행할 경우, "my-text-model" 이름의 모델이 생성되어 Runway에 저장됩니다. 해당 모델은 서비스 콘솔의 모델(Model) 페이지에서 확인할 수 있습니다.
-> 
-> **[sentiment classifcation with huggingface](https://drive.google.com/uc?export=download&id=1lbONDH69PuaJXrlxed3P6UlCfLAWaoqo)**
+> **[sentiment classification with huggingface](https://drive.google.com/uc?export=download&id=1lbONDH69PuaJXrlxed3P6UlCfLAWaoqo)**
 
-![](https://files.readme.io/6de7d14-Screenshot_2023-06-27_at_3.05.57_PM.png)
+![link pipeline](image/link_pipeline.png)
 
 
 # Runway
@@ -20,10 +21,9 @@ Runway에 포함된 Link를 사용하여 Huggingface 모델을 학습하고 저�
 > 📘 
 > 
 > 이 튜토리얼은 Stansford 에서 제공하는 imdb 데이터셋을 재가공해 업로드한 [huggingface 의 데이터 셋](https://huggingface.co/datasets/imdb/tree/refs%2Fconvert%2Fparquet/plain_text)입니다. 해당 데이터셋을 이용해 감성 분석을 진행할 수 있습니다.
-> 
-> IMDB 데이터셋은 아래 항목을 클릭하여 다운로드할 수 있습니다.
-> 
-> **[imdb test dataset](https://drive.google.com/uc?export=download&id=1QlIzPfOw_b0xXnXM6rxnW3Vbr-VDm0At)**
+>
+> IMDB 데이터셋은 아래 항목을 클릭하여 다운로드할 수 있습니다.  
+> **[IMDB test dataset](https://drive.google.com/uc?export=download&id=1QlIzPfOw_b0xXnXM6rxnW3Vbr-VDm0At)**
 
 1. Runway 프로젝트 메뉴에서 데이터셋 페이지로 이동합니다.
 2. 데이터셋 페이지에서 신규 데이터셋을 생성합니다.
@@ -82,7 +82,7 @@ Runway에 포함된 Link를 사용하여 Huggingface 모델을 학습하고 저�
 
 1. 토크나이저로 사용할 아키텍쳐를 정하기 위해서 Link 파라미터로 MODEL_ARCH_NAME 에 "distilbert-base-uncased" 를 등록합니다.
 
-    ![link pipeline](image/link_pipeline.png)
+    ![link parameter](image/link_parameter.png)
 
 2. 토크나이저를 불러오고 전처리 코드를 작성합니다.
 
@@ -188,7 +188,7 @@ Runway에 포함된 Link를 사용하여 Huggingface 모델을 학습하고 저�
    ```python
    import runway
 
-   runway.log_model(model_name='my-text-model', model=hug_model, input_samples={'predict': input_sample})
+   runway.log_model(model_name="my-text-model", model=hug_model, input_samples={"predict": input_sample})
    ```
 
     ![save model field](image/save_model_field.png)
