@@ -196,15 +196,10 @@ Runway에 포함된 Link를 사용하여 Huggingface 모델을 학습하고 저�
 
 > 📘 모델 배포 방법에 대한 구체적인 가이드는 **[모델 배포](https://docs.mrxrunway.ai/docs/%EB%AA%A8%EB%8D%B8-%EB%B0%B0%ED%8F%AC-%EB%B0%8F-%EC%98%88%EC%B8%A1-%EC%9A%94%EC%B2%AD)** 문서에서 확인할 수 있습니다.
 
-## 데모 서비스
+## 데모 사이트
 
-1. 배포된 모델을 실험하기 위한 데모 서비스는 아래 명령어로 수행할 수 있습니다.
-
-    ```bash
-    make -C demo build-run
-    ```
-
-2. 실행 후 [http://localhost:8000](http://localhost:8000) 에 접속하면 아래와 같은 화면이 나옵니다.
+1. 배포된 모델을 실험하기 위한 [데모 사이트](http://demo.service.mrxrunway.ai/object)에 접속합니다.
+2. 데모사이트에 접속하면 아래와 같은 화면이 나옵니다.
 
     ![demo web](../../assets/sentiment_classification_with_huggingface/demo-web.png)
 
