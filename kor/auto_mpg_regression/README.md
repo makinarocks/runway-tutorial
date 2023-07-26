@@ -8,11 +8,11 @@ Runway에 포함된 Link를 사용하여 테이블 형식 데이터 세트를 �
 > **[auto mpg model notebook](https://docs.google.com/uc?export=download&id=1z4Rsy4jSrDCgMnJGjILq3zoS1j0p7s2r)**
 > 
 
-![link pipeline](../assets/auto_mpg_regression/link_pipeline.png)
+![link pipeline](../../assets/auto_mpg_regression/link_pipeline.png)
 
-# Runway
+## Runway
 
-## 데이터셋 생성
+### 데이터셋 생성
 
 > 📘 이 튜토리얼은 UC Irvine에서 제공하는 1970년대 후반과 1980년대 초반에 출시된 자동차의 정보가 포함된 AutoMPG 데이터 세트를 사용합니다.  
 > 해당 데이터 세트에는 개별 자동차의 실린더 수, 배기량, 마력, 공차 중량, 제조국 등의 특성이 포함되어있습니다.
@@ -29,18 +29,18 @@ Runway에 포함된 Link를 사용하여 테이블 형식 데이터 세트를 �
 7. `Create`를 클릭합니다.
 
 
-# Link
+## Link
 
-## 패키지 준비
+### 패키지 준비
 
 1. (Optional) 튜토리얼에서 사용할 패키지를 설치합니다. 
     ```python
     !pip install sklearn pandas numpy
     ```
 
-## 데이터
+### 데이터
 
-### 데이터 불러오기
+#### 데이터 불러오기
 
 > 📘 데이터 세트 불러오는 방법에 대한 구체적인 가이드는 **[데이터 세트 가져오기](https://docs.mrxrunway.ai/docs/데이터-세트-가져오기)** 가이드 에서 확인할 수 있습니다.
 
@@ -54,18 +54,18 @@ Runway에 포함된 Link를 사용하여 테이블 형식 데이터 세트를 �
     df = pd.read_csv(RUNWAY_DATA_PATH)
     ```
 
-### 데이터 전처리
+#### 데이터 전처리
 
 1. 데이터 세트에 포함된 결측치 값을 제거하고, 학습 특성 데이터 세트와 목표 특성 데이터 세트를 분리합니다.
 
     ```python
-    #Drop NA data in dataset
+    ## Drop NA data in dataset
     data_clean= df.dropna()
 
-    #Select Predictor columns
+    ## Select Predictor columns
     X = df[['cylinders', 'displacement', 'weight', 'acceleration', "origin"]]
 
-    #Select target column
+    ## Select target column
     y = df['mpg']
     ```
 
@@ -74,13 +74,13 @@ Runway에 포함된 Link를 사용하여 테이블 형식 데이터 세트를 �
     ```python
     from sklearn.model_selection import train_test_split
 
-    #Split data into training and testing sets
+    ## Split data into training and testing sets
     X_train, X_valid, y_train, y_valid = train_test_split(X, y, test_size=0.2)
     ```
 
-## 모델
+### 모델
 
-### 모델 클래스
+#### 모델 클래스
 
 1. 모델 학습을 위한 모델 클래스를 작성합니다.
 
@@ -108,7 +108,7 @@ Runway에 포함된 Link를 사용하여 테이블 형식 데이터 세트를 �
             return pred_df
     ```
 
-### 모델 학습
+#### 모델 학습
 
 1. 선언한 모델 클래스와 학습용 데이터셋을 활용하여, 모델 학습을 수행합니다.
 
@@ -122,17 +122,17 @@ Runway에 포함된 Link를 사용하여 테이블 형식 데이터 세트를 �
     ```python
     from sklearn.metrics import mean_squared_error
 
-    #Test model on held out test set
+    ## Test model on held out test set
     valid_pred = runway_regressor.predict(X_valid)
 
-    #Mean Squared error on the testing set
+    ## Mean Squared error on the testing set
     mse = mean_squared_error(valid_pred, y_valid)
 
-    #Print evaluate model score
+    ## Print evaluate model score
     print('Mean Squared Error: {}'.format(mse))
     ```
 
-## 모델 저장
+### 모델 저장
 
 > 📘 모델 저장 방법에 대한 구체적인 가이드는 **[모델 저장](https://dash.readme.com/project/makinarocks-runway/docs/모델-저장)** 문서에서 확인할 수 있습니다.
 
@@ -150,7 +150,7 @@ Runway에 포함된 Link를 사용하여 테이블 형식 데이터 세트를 �
     runway.log_model(model_name="runway-regressor", model=runway_regressor, input_samples={"predict": input_samples})
     ```
 
-# 파이프라인 구성 및 저장
+## 파이프라인 구성 및 저장
 
 > 📘 파이프라인 생성 방법에 대한 구체적인 가이드는 **[파이프라인 생성](https://docs.mrxrunway.ai/docs/파이프라인-생성)** 문서에서 확인할 수 있습니다.
 

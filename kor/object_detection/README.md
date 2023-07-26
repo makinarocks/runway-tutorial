@@ -9,24 +9,24 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
 > **[object detection notebook](https://drive.google.com/uc?export=download&id=1WgdswAqXZtRE-BMJXpiFIBYHV-oboV4F)**
 
 
-![link notebook](../assets/object_detection/link_pipeline.png)
+![link notebook](../../assets/object_detection/link_pipeline.png)
 
-# Runway
+## Runway
 
-## 데이터셋 생성
+### 데이터셋 생성
 
-### Datasource 연결
+#### Datasource 연결
 
 1. Project Settings 에서 Datasource 를 선택합니다.
 2. Create Datasource 을 눌러서 새로운 Datasource를 연결합니다.
 3. Storage 에서 AWS S3를 선택합니다.
 4. 전달 받은 id와 key 값을 입력합니다.
 
-![data source](../assets/object_detection/datasource.png)
+![data source](../../assets/object_detection/datasource.png)
 
 1. 연결을 확인하고 생성합니다.
 
-### 메타데이터 업로드
+#### 메타데이터 업로드
 
 > 📘 현재 Runway 에서는 COCO 형식의 config 만 지원이 됩니다.  
 > 
@@ -41,18 +41,18 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
 6. 데이터셋으로 생성할 파일을 파일 탐색기로 선택하거나, Drag&Drop으로 입력합니다.
 7. `Create`를 클릭합니다.
 
-# Link
+## Link
 
-## 패키지 설치
+### 패키지 설치
 
 1. 튜토리얼에서 사용할 패키지를 설치합니다.
     ```python
     !pip install torch torchvision Pillow seaborn
     ```
 
-## 데이터
+### 데이터
 
-### 데이터 불러오기
+#### 데이터 불러오기
 
 > 📘 데이터 세트 불러오는 방법에 대한 구체적인 가이드는 **[데이터 세트 가져오기](https://docs.mrxrunway.ai/docs/데이터-세트-가져오기)** 가이드 에서 확인할 수 있습니다.
 
@@ -60,7 +60,7 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
 2. 생성한 데이터셋을 선택하고 variable 이름을 적습니다.
 3. 코드를 생성하고 Link 컴포넌트로 등록합니다. 
 
-### 예제 데이터 추출
+#### 예제 데이터 추출
 
 1. 샘플 데이터 하나를 추출 후 이미지를 확인합니다.
 
@@ -77,11 +77,11 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
     imshow(img)
     ```
 
-    ![sample image](../assets/object_detection/sample_image.png)
+    ![sample image](../../assets/object_detection/sample_image.png)
 
-## 학습
+### 학습
 
-### COCO 데이터셋
+#### COCO 데이터셋
 
 1. 모델을 학습하기 위해서 pytorch 에서 제공하는 Dataset 을 생성합니다.
 
@@ -113,7 +113,7 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
             self.ids = list(sorted(self.coco.imgs.keys()))
             
         def __getitem__(self, index):
-            # refer to https://pytorch.org/tutorials/intermediate/torchvision_tutorial.html
+            ## refer to https://pytorch.org/tutorials/intermediate/torchvision_tutorial.html
             img_id = self.ids[index]
             ann_ids = self.coco.getAnnIds(imgIds=img_id)
             ann = self.coco.loadAnns(ann_ids)
@@ -142,7 +142,7 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
                 "iscrowd": torch.zeros((num_objs,), dtype=torch.int64),
             }
             
-            # transform image
+            ## transform image
             if self.transforms is not None:
                 img = self.transforms(img)
             
@@ -156,7 +156,7 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
     ```python
     from torch.utils.data import DataLoader
 
-    # Define Train dataset
+    ## Define Train dataset
     data_root = Path(RUNWAY_DATA_PATH).parent
     dataset = COCODataset(data_root, coco, get_transforms())
 
@@ -169,7 +169,7 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
     )
     ```
 
-## 모델 선언
+### 모델 선언
 
 1. 학습에 사용할 모델을 선언합니다. 튜토리얼에서는 pytorch 의 `fasterrcnn_resnet50_fpn` 모델을 사용합니다.
 
@@ -177,15 +177,15 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
     import torch
     from torchvision.models.detection import fasterrcnn_resnet50_fpn
 
-    # Define local variables
+    ## Define local variables
     print(torch.cuda.is_available())
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
-    # Define training model
+    ## Define training model
     model = fasterrcnn_resnet50_fpn(weights="DEFAULT").to(device)
     ```
 
-## 모델 학습
+### 모델 학습
 
 > 📘 Link 파라미터 등록 가이드는 **[파이프라인 파라미터 설정](https://dash.readme.com/project/makinarocks-runway/docs/파이프라인-파라미터-설정)** 문서에서 확인할 수 있습니다.
 
@@ -215,9 +215,9 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
     torch.cuda.empty_cache()
     ```
 
-## 모델 추론
+### 모델 추론
 
-### 모델 랩핑 클래스 선언
+#### 모델 랩핑 클래스 선언
 
 1. 학습된 모델을 서빙할 수 있도록 ModelWrapper를 작성합니다.
 
@@ -238,11 +238,11 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
             self.device = device
 
         def bytesarray_to_tensor(self, bytes_array: str):
-            # input : "utf-8" decoded bytes_array
+            ## input : "utf-8" decoded bytes_array
             encoded_bytes_array = bytes_array.encode("utf-8")
-            # decode encoded_bytes_array with ascii code
+            ## decode encoded_bytes_array with ascii code
             img_64_decode = base64.b64decode(encoded_bytes_array)
-            # get image file and transform to tensor
+            ## get image file and transform to tensor
             image_from_bytes = Image.open(io.BytesIO(img_64_decode))
             return transforms.ToTensor()(image_from_bytes).to(self.device)
 
@@ -255,7 +255,7 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
         @torch.no_grad()
         def predict(self, df):
             self.model.eval()
-            # df is 1-d dataframe with bytes array
+            ## df is 1-d dataframe with bytes array
             tensor_list = list((map(self.bytesarray_to_tensor, df.squeeze(axis=1).to_list())))
             pred = self.model(tensor_list)
             result = pd.DataFrame(pred).applymap(lambda x: self.tensor_to_bytesarray(x))
@@ -280,7 +280,7 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
     serve_model = ModelWrapper(model=model, device=device)
     ```
 
-### 샘플 이미지 추론
+#### 샘플 이미지 추론
 
 1. Runway 에서는 API 서빙을 위한 입력과 출력을 Dataframe 형식만 지원하고 있습니다. 이를 위해서 입력 이미지를 bytearray 로 변환해주는 코드를 작성합니다.
 
@@ -298,7 +298,7 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
     def images_to_bytearray_df(image_filename_list: list):
         df_list = []
         for img_filename in image_filename_list:
-            image = open(img_filename, "rb")  # open binary file in read mode
+            #image = open(img_filename, "rb")  # open binary file in read mode
             image_read = image.read()
             df_list.append(convert_image_to_bytearray(image_read))
         return pd.DataFrame(df_list, columns=["image_data"])
@@ -310,26 +310,26 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
     from PIL import ImageDraw
     import seaborn as sns
 
-    # make input sample
+    ## make input sample
     input_sample = images_to_bytearray_df(image_filename_list)
 
-    # For inference
+    ## For inference
     pred = serve_model.predict(input_sample)
     predictions = serve_model.revert_predict_to_array(pred)
 
-    # Load Categories
+    ## Load Categories
     cats = dataset.coco.loadCats(dataset.coco.getCatIds())
     cats_palette = sns.color_palette("Set2", len(cats)).as_hex()
     for idx in range(len(cats)):
         cats[idx]["color"] = cats_palette[idx]
 
-    # Draw inference results
+    ## Draw inference results
     img = Image.open(sample_image_path)
     for idx in range(len(predictions["boxes"][0])):
         label = predictions["labels"][0][idx]
         score = predictions["scores"][0][idx]
         box = predictions["boxes"][0][idx]
-        # cat = cats[label]
+        ## cat = cats[label]
         cat = dataset.coco.loadCats(label.item())[0]
 
         if score < 0.9:
@@ -344,9 +344,9 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
     ```
 
 3. 추론 결과를 확인합니다.  
-   ![predict result](../assets/object_detection/predict_result.png)
+   ![predict result](../../assets/object_detection/predict_result.png)
 
-## 모델 저장
+### 모델 저장
 
 > 📘 모델 저장 방법에 대한 구체적인 가이드는 **[모델 저장](https://docs.mrxrunway.ai/docs/모델-저장)** 문서에서 확인할 수 있습니다.
 
@@ -358,7 +358,7 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
     runway.log_model(model_name="my-detection-model", model=serve_model, input_samples={"predict": input_sample})
     ```
 
-# 파이프라인 구성 및 저장
+## 파이프라인 구성 및 저장
 
 > 📘 파이프라인 생성 방법에 대한 구체적인 가이드는 **[파이프라인 생성](https://dash.readme.com/project/makinarocks-runway/docs/파이프라인-생성)** 문서에서 확인할 수 있습니다.
 
@@ -373,11 +373,11 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
 4. Runway 프로젝트 메뉴에서 Pipeline 페이지로 이동합니다.
 5. 저장한 파이프라인의 이름을 클릭하면 파이프라인 상세 페이지로 진입합니다. 
 
-# 모델 배포
+## 모델 배포
 
 > 📘 모델 배포 방법에 대한 구체적인 가이드는 **[모델 배포](https://docs.mrxrunway.ai/docs/%EB%AA%A8%EB%8D%B8-%EB%B0%B0%ED%8F%AC-%EB%B0%8F-%EC%98%88%EC%B8%A1-%EC%9A%94%EC%B2%AD)** 문서에서 확인할 수 있습니다.
 
-# 데모 서비스
+## 데모 서비스
 
 1. 배포된 모델을 실험하기 위한 데모 서비스는 아래 명령어로 수행할 수 있습니다.
 
@@ -387,11 +387,11 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
 
 2. 실행 후 [http://localhost:8000](http://localhost:8000) 에 접속하면 아래와 같은 화면이 나옵니다.
 
-    ![demo web](../assets/sentiment_classification_with_huggingface/demo-web.png)
+    ![demo web](../../assets/sentiment_classification_with_huggingface/demo-web.png)
 
 3. API Endpoint, 발급 받은 API Token, 예측할 문장을 입력합니다.
 
-    ![demo fill field](../assets/sentiment_classification_with_huggingface/demo-fill-field.png)
+    ![demo fill field](../../assets/sentiment_classification_with_huggingface/demo-fill-field.png)
 4. 결과를 받을 수 있습니다.
 
-    ![demo result](../assets/sentiment_classification_with_huggingface/demo-result.png)
+    ![demo result](../../assets/sentiment_classification_with_huggingface/demo-result.png)

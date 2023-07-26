@@ -1,4 +1,4 @@
-# Sentiment Classification with Huggingface
+## Sentiment Classification with Huggingface
 
 Runway에 포함된 Link를 사용하여 Huggingface 모델을 학습하고 저장합니다.  
 작성한 모델 학습 코드를 재학습에 활용하기 위해 파이프라인을 구성하고 저장합니다.
@@ -8,11 +8,11 @@ Runway에 포함된 Link를 사용하여 Huggingface 모델을 학습하고 저�
 > 
 > **[sentiment classification with huggingface](https://drive.google.com/uc?export=download&id=1lbONDH69PuaJXrlxed3P6UlCfLAWaoqo)**
 
-![link pipeline](../assets/sentiment_classification_with_huggingface/link_pipeline.png)
+![link pipeline](../../assets/sentiment_classification_with_huggingface/link_pipeline.png)
 
-# Runway
+## Runway
 
-## 데이터셋 생성
+### 데이터셋 생성
 
 > 📘 이 튜토리얼은 Stansford 에서 제공하는 imdb 데이터셋을 재가공해 업로드한 [huggingface 의 데이터 셋](https://huggingface.co/datasets/imdb/tree/refs%2Fconvert%2Fparquet/plain_text)입니다. 해당 데이터셋을 이용해 감성 분석을 진행할 수 있습니다.
 >
@@ -27,9 +27,9 @@ Runway에 포함된 Link를 사용하여 Huggingface 모델을 학습하고 저�
 6. 데이터셋으로 생성할 파일을 파일 탐색기로 선택하거나, Drag&Drop으로 입력합니다.
 7. `Create`를 클릭합니다.
 
-# Link
+## Link
 
-## 패키지 설치
+### 패키지 설치
 
 1. 튜토리얼에서 사용할 패키지를 설치합니다.
 
@@ -37,9 +37,9 @@ Runway에 포함된 Link를 사용하여 Huggingface 모델을 학습하고 저�
 !pip install transformers[torch] datasets evaluate
 ```
 
-## 데이터
+### 데이터
 
-### 데이터 불러오기
+#### 데이터 불러오기
 
 > 📘 데이터 세트 불러오는 방법에 대한 구체적인 가이드는 **[데이터 세트 가져오기](https://docs.mrxrunway.ai/docs/데이터-세트-가져오기)** 가이드 에서 확인할 수 있습니다.
 
@@ -61,13 +61,13 @@ Runway에 포함된 Link를 사용하여 Huggingface 모델을 학습하고 저�
     ds.set_format("pt")
     ```
 
-### 데이터 전처리
+#### 데이터 전처리
 
 > 📘 Link 파라미터 등록 가이드는 **[파이프라인 파라미터 설정](https://dash.readme.com/project/makinarocks-runway/docs/파이프라인-파라미터-설정)** 문서에서 확인할 수 있습니다.
 
 1. 토크나이저로 사용할 아키텍쳐를 정하기 위해서 Link 파라미터로 MODEL_ARCH_NAME 에 "distilbert-base-uncased" 를 등록합니다.
 
-    ![link parameter](../assets/sentiment_classification_with_huggingface/link_parameter.png)
+    ![link parameter](../../assets/sentiment_classification_with_huggingface/link_parameter.png)
 
 2. 토크나이저를 불러오고 전처리 코드를 작성합니다.
 
@@ -89,7 +89,7 @@ Runway에 포함된 Link를 사용하여 Huggingface 모델을 학습하고 저�
     tokenized_ds = ds.map(preprocess_function, batch_size=True)
     ```
 
-## 모델 학습
+### 모델 학습
 
 1. Transformer 의 `AutoModelForSequenceClassification` 모듈을 이용해 모델을 불러옵니다.
 
@@ -129,8 +129,8 @@ Runway에 포함된 Link를 사용하여 Huggingface 모델을 학습하고 저�
     trainer.train()
     ```
 
-## 모델 저장
-### 모델 랩핑 클래스
+### 모델 저장
+#### 모델 랩핑 클래스
 
 1. API 서빙에 이용할 수 있도록 HuggingModel 클래스를 작성합니다.
 
@@ -157,7 +157,7 @@ Runway에 포함된 Link를 사용하여 Huggingface 모델을 학습하고 저�
 
     hug_model = HuggingModel(pipe)
 
-### 모델 저장
+#### 모델 저장
 
 > 📘  모델 저장 방법에 대한 구체적인 가이드는 **[모델 저장](https://docs.mrxrunway.ai/docs/%EB%AA%A8%EB%8D%B8-%EC%A0%80%EC%9E%A5)** 문서에서 확인할 수 있습니다.
 
@@ -177,7 +177,7 @@ Runway에 포함된 Link를 사용하여 Huggingface 모델을 학습하고 저�
     runway.log_model(model_name="my-text-model", model=hug_model, input_samples={"predict": input_sample})
     ```
 
-# 파이프라인 구성 및 저장
+## 파이프라인 구성 및 저장
 
 > 📘 파이프라인 생성 방법에 대한 구체적인 가이드는 **[파이프라인 생성](https://docs.mrxrunway.ai/docs/파이프라인-생성)** 문서에서 확인할 수 있습니다.
 
@@ -192,11 +192,11 @@ Runway에 포함된 Link를 사용하여 Huggingface 모델을 학습하고 저�
 4. Runway 프로젝트 메뉴에서 Pipeline 페이지로 이동합니다.
 5. 저장한 파이프라인의 이름을 클릭하면 파이프라인 상세 페이지로 진입합니다. 
 
-# 모델 배포
+## 모델 배포
 
 > 📘 모델 배포 방법에 대한 구체적인 가이드는 **[모델 배포](https://docs.mrxrunway.ai/docs/%EB%AA%A8%EB%8D%B8-%EB%B0%B0%ED%8F%AC-%EB%B0%8F-%EC%98%88%EC%B8%A1-%EC%9A%94%EC%B2%AD)** 문서에서 확인할 수 있습니다.
 
-# 데모 서비스
+## 데모 서비스
 
 1. 배포된 모델을 실험하기 위한 데모 서비스는 아래 명령어로 수행할 수 있습니다.
 
@@ -206,11 +206,11 @@ Runway에 포함된 Link를 사용하여 Huggingface 모델을 학습하고 저�
 
 2. 실행 후 [http://localhost:8000](http://localhost:8000) 에 접속하면 아래와 같은 화면이 나옵니다.
 
-    ![demo web](../assets/object_detection/demo-web.png)
+    ![demo web](../../assets/object_detection/demo-web.png)
 
 3. API Endpoint, 발급 받은 API Token, 예측할 문장을 입력합니다.
 
-    ![demo fill field](../assets/object_detection/demo-fill-field.png)
+    ![demo fill field](../../assets/object_detection/demo-fill-field.png)
 4. 결과를 받을 수 있습니다.
 
-    ![demo result](../assets/object_detection/demo-result.png)
+    ![demo result](../../assets/object_detection/demo-result.png)
