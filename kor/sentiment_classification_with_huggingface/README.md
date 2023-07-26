@@ -14,7 +14,7 @@ Runway에 포함된 Link를 사용하여 Huggingface 모델을 학습하고 저�
 
 ### 데이터셋 생성
 
-> 📘 이 튜토리얼은 Stansford 에서 제공하는 imdb 데이터셋을 재가공해 업로드한 [huggingface 의 데이터 셋](https://huggingface.co/datasets/imdb/tree/refs%2Fconvert%2Fparquet/plain_text)입니다. 해당 데이터셋을 이용해 감성 분석을 진행할 수 있습니다.
+> 📘 이 튜토리얼은 Stanford 에서 제공하는 imdb 데이터셋을 재가공해 업로드한 [huggingface 의 데이터 셋](https://huggingface.co/datasets/imdb/tree/refs%2Fconvert%2Fparquet/plain_text)입니다. 해당 데이터셋을 이용해 감성 분석을 진행할 수 있습니다.
 >
 > IMDB 데이터셋은 아래 항목을 클릭하여 다운로드할 수 있습니다.  
 > **[IMDB test dataset](https://drive.google.com/uc?export=download&id=1QlIzPfOw_b0xXnXM6rxnW3Vbr-VDm0At)**
@@ -33,7 +33,7 @@ Runway에 포함된 Link를 사용하여 Huggingface 모델을 학습하고 저�
 
 1. 튜토리얼에서 사용할 패키지를 설치합니다.
 
-```Text Python
+```python
 !pip install transformers[torch] datasets evaluate
 ```
 
@@ -206,11 +206,11 @@ Runway에 포함된 Link를 사용하여 Huggingface 모델을 학습하고 저�
 
 2. 실행 후 [http://localhost:8000](http://localhost:8000) 에 접속하면 아래와 같은 화면이 나옵니다.
 
-    ![demo web](../../assets/object_detection/demo-web.png)
+    ![demo web](../../assets/sentiment_classification_with_huggingface/demo-web.png)
 
 3. API Endpoint, 발급 받은 API Token, 예측할 문장을 입력합니다.
 
-    ![demo fill field](../../assets/object_detection/demo-fill-field.png)
+    ![demo fill field](../../assets/sentiment_classification_with_huggingface/demo-fill-field.png)
 4. 결과를 받을 수 있습니다.
 
-    ![demo result](../../assets/object_detection/demo-result.png)
+    ![demo result](../../assets/sentiment_classification_with_huggingface/demo-result.png)

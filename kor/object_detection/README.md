@@ -15,16 +15,16 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
 
 ### 데이터셋 생성
 
-#### Datasource 연결
+#### Data source 연결
 
-1. Project Settings 에서 Datasource 를 선택합니다.
-2. Create Datasource 을 눌러서 새로운 Datasource를 연결합니다.
+1. Project Settings 에서 Data source 를 선택합니다.
+2. Create Data source 을 눌러서 새로운 Data source를 연결합니다.
 3. Storage 에서 AWS S3를 선택합니다.
 4. 전달 받은 id와 key 값을 입력합니다.
 
-![data source](../../assets/object_detection/datasource.png)
+![data source](../../assets/object_detection/data source.png)
 
-1. 연결을 확인하고 생성합니다.
+5. 연결을 확인하고 생성합니다.
 
 #### 메타데이터 업로드
 
@@ -108,7 +108,7 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
         def __init__(self, data_root, coco, transforms=None):
             self.data_root = Path(data_root)
             self.transforms = transforms
-            #pre-loaded variables
+            # pre-loaded variables
             self.coco = coco
             self.ids = list(sorted(self.coco.imgs.keys()))
             
@@ -387,11 +387,11 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
 
 2. 실행 후 [http://localhost:8000](http://localhost:8000) 에 접속하면 아래와 같은 화면이 나옵니다.
 
-    ![demo web](../../assets/sentiment_classification_with_huggingface/demo-web.png)
+    ![demo web](../../assets/object_detection/demo-web.png)
 
-3. API Endpoint, 발급 받은 API Token, 예측할 문장을 입력합니다.
+3. API Endpoint, 발급 받은 API Token, 예측에 사용할 이미지를 업로드합니다.
 
-    ![demo fill field](../../assets/sentiment_classification_with_huggingface/demo-fill-field.png)
+    ![demo fill field](../../assets/object_detection/demo-fill-field.png)
 4. 결과를 받을 수 있습니다.
 
-    ![demo result](../../assets/sentiment_classification_with_huggingface/demo-result.png)
+    ![demo result](../../assets/object_detection/demo-result.png)
