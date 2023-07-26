@@ -16,7 +16,7 @@ In Computer Vision:
 - [Object detection with Pytorch FasterRCNN](kor/object_detection/README.md)
 
 In Tabular Dataset:
-- [Tabular regression with auto mpg dataset](kor/auto_mpg/regression/README.md)
+- [Tabular regression with auto mpg dataset](kor/auto_mpg_regression/README.md)
 - [Robotarm anomaly detection with scikit-learn PCA](kor/robotarm_anomaly_detection/README.md)
 
 ### English
@@ -28,5 +28,5 @@ In Computer Vision:
 - [Object detection with Pytorch FasterRCNN](en/object_detection/README.md)
 
 In Tabular Dataset:
-- [Tabular regression with auto mpg dataset](en/auto_mpg/regression/README.md)
+- [Tabular regression with auto mpg dataset](en/auto_mpg_regression/README.md)
 - [Robotarm anomaly detection with scikit-learn PCA](en/robotarm_anomaly_detection/README.md)
