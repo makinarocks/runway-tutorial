@@ -148,7 +148,7 @@ Runway에 포함된 Link를 사용하여 테이블 형식 데이터 세트를 �
 1. 모델 학습에 사용한 학습 데이터의 샘플을 생성합니다.
 
     ```python
-    input_sample = df.sample(1)
+    input_sample = proc_df.sample(1)
     input_sample
     ```
 2. Runway code snippet 의 save model을 사용해 모델을 저장하는 코드를 생성합니다. 그리고 모델 과 관련된 정보를 저장합니다.
