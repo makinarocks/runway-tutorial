@@ -48,9 +48,14 @@ Runway에 포함된 Link를 사용하여 테이블 형식 데이터 세트를 �
 3. 코드를 생성하고 Link 컴포넌트로 등록합니다. 
 
     ```python
+    import os
     import pandas as pd
 
-    df = pd.read_csv(RUNWAY_DATA_PATH)
+    dfs = []
+    for dirname, _, filenames in os.walk(RUNWAY_DATA_PATH):
+        for filename in filenames:
+            dfs += [pd.read_csv(os.path.join(dirname, filename))]
+    df = pd.concat(dfs)
     ```
 
 #### 데이터 전처리
@@ -120,11 +125,20 @@ Runway에 포함된 Link를 사용하여 테이블 형식 데이터 세트를 �
 1. PCA에서 사용할 컴포넌트의 개수를 지정하기 위해서 Link 파라미터로 N_COMPONENTS 에 2 를 등록합니다.
 
      ![link parameter](../../assets/robotarm_anomaly_detection/link_parameter.png)
-2. 선언한 모델 클래스에 Link 파라미터를 입력하고 학습용 데이터셋을 활용하여, 모델 학습을 수행합니다.
+2. 선언한 모델 클래스에 Link 파라미터를 입력하고 학습용 데이터셋을 활용하여, 모델 학습을 수행하고 모델을 평가합니다.
 
     ```python
-    detector = PCADetector(n_components=N_COMPONENTS)
+    
+    parameters = {"n_components": N_COMPONENTS}
+
+    detector = PCADetector(n_components=parameters["n_components"])
     detector.fit(train)
+
+    train_pred = detector.predict(train)
+    valid_pred = detector.predict(valid)
+
+    mean_train_recon_err = train_pred.mean()
+    mean_valid_recon_err = valid_pred.mean()
     ```
 
 ### 모델 저장
@@ -137,11 +151,20 @@ Runway에 포함된 Link를 사용하여 테이블 형식 데이터 세트를 �
     input_sample = df.sample(1)
     input_sample
     ```
-2. Runway code snippet 의 save model을 사용해 모델을 저장하는 코드를 생성합니다.
+2. Runway code snippet 의 save model을 사용해 모델을 저장하는 코드를 생성합니다. 그리고 모델 과 관련된 정보를 저장합니다.
 
     ```python
     import runway
 
+    # start run
+    runway.start_run()
+
+    # log model related info
+    runway.log_parameters(parameters)
+    runway.log_metric("mean_train_recon_err", mean_train_recon_err)
+    runway.log_metric("mean_valid_recon_err", mean_valid_recon_err)
+
+    # log model
     runway.log_model(model_name="pca-model", model=detector, input_samples={"predict": input_sample})
     ```
 

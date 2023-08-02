@@ -48,9 +48,14 @@ We use the Link included in Runway to load a table-formatted dataset and train a
 3. Register the code with the Link component.
 
     ```python
+    import os
     import pandas as pd
 
-    df = pd.read_csv(RUNWAY_DATA_PATH)
+    dfs = []
+    for dirname, _, filenames in os.walk(RUNWAY_DATA_PATH):
+        for filename in filenames:
+            dfs += [pd.read_csv(os.path.join(dirname, filename))]
+    df = pd.concat(dfs)
     ```
 
 #### Data Preprocessing
@@ -121,11 +126,20 @@ We use the Link included in Runway to load a table-formatted dataset and train a
 
      ![link parameter](../../assets/robotarm_anomaly_detection/link_parameter.png)
 
-2. Input the Link parameter into the declared model class, and perform model training using the training dataset.
+2. Use the Link parameter into the declared model class, and perform model training using the training dataset and evaluate model.
 
     ```python
-    detector = PCADetector(n_components=N_COMPONENTS)
+    
+    parameters = {"n_components": N_COMPONENTS}
+
+    detector = PCADetector(n_components=parameters["n_components"])
     detector.fit(train)
+
+    train_pred = detector.predict(train)
+    valid_pred = detector.predict(valid)
+
+    mean_train_recon_err = train_pred.mean()
+    mean_valid_recon_err = valid_pred.mean()
     ```
 
 ### Model Saving
@@ -135,16 +149,26 @@ We use the Link included in Runway to load a table-formatted dataset and train a
 1. Create a sample input data from the training dataset.
 
     ```python
-    input_sample = df.sample(1)
+    input_sample = proc_df.sample(1)
     input_sample
     ```
-2. Use the "save model" option from the Runway code snippet to save the model.
+2. Use the "save model" option from the Runway code snippet to save the model. And also save model related information.
 
     ```python
     import runway
 
+    # start run
+    runway.start_run()
+
+    # log model related info
+    runway.log_parameters(parameters)
+    runway.log_metric("mean_train_recon_err", mean_train_recon_err)
+    runway.log_metric("mean_valid_recon_err", mean_valid_recon_err)
+
+    # log model
     runway.log_model(model_name="pca-model", model=detector, input_samples={"predict": input_sample})
     ```
+
 
 
 ## Pipeline Configuration and Saving
