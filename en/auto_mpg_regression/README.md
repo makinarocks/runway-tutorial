@@ -22,7 +22,7 @@ In this tutorial, we will perform tabular regression on the AutoMPG dataset usin
 1. Go to the Runway project menu and navigate to the dataset page.
 2. Create a new dataset on the dataset page.
 3. Click on the `Create Dataset` button in the top right corner.
-4. Select `Local File` on `Tabular Data` area.
+4. Select `Local File`.
 5. Provide a name and description for the dataset you are creating.
 6. Choose the file to include in the dataset using the file explorer or drag-and-drop.
 7. Click on `Create`.
