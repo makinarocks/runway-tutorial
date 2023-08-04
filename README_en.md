@@ -10,7 +10,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 <p align="center">
   <picture>
-    <img alt="MakinaRocks Runway Tutorial" src="" width="352" height="59" style="max-width: 100%;">
+    <img alt="MakinaRocks Runway Tutorial" src="assets/logo.png" height="45" style="max-width: 100%;">
   </picture>
   <br/>
   <br/>
@@ -28,7 +28,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 </h3>
 
 <h3 align="center">
-    <img src="assets/mainimage.png" height="600" style="max-width: 100%;"></a>
+    <img src="assets/mainimage.png" height="250" style="max-width: 100%;"></a>
 </h3>
 
 ## Runway Document
