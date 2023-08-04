@@ -18,7 +18,7 @@ Runway에 포함된 Link를 사용하여 테이블 형식 데이터 세트를 �
 > 📘 빠른 실행을 위해 아래의 주피터 노트북을 활용할 수 있습니다.  
 > 아래의 주피터 노트북을 다운로드 받아 실행할 경우, "auto-mpg-reg-model-sklearn" 이름의 모델이 생성되어 Runway에 저장됩니다.
 >
-> **[auto mpg model notebook](https://drive.google.com/uc?export=download&id=1npM2tvx7hYk6NJGfK6F8spphBuwaFzjr)**
+> **[auto mpg model notebook](https://drive.google.com/uc?export=download&id=1v2L3OeycGqgqcc8w2ost9SPX730sVcwg)**
 
 ![link pipeline](../../assets/auto_mpg_regression/link_pipeline.png)
 

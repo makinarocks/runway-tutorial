@@ -18,7 +18,7 @@ In this tutorial, we will perform tabular regression on the AutoMPG dataset usin
 > 📘 For quick execution, you can use the Jupyter Notebook provided below.
 > If you download and run the Jupyter Notebook, a model named "auto-mpg-reg-model-sklearn" will be created and saved in Runway.
 >
-> **[auto mpg model notebook](https://drive.google.com/uc?export=download&id=1npM2tvx7hYk6NJGfK6F8spphBuwaFzjr)**
+> **[auto mpg model notebook](https://drive.google.com/uc?export=download&id=1v2L3OeycGqgqcc8w2ost9SPX730sVcwg)**
 
 ![link pipeline](../../assets/auto_mpg_regression/link_pipeline.png)
 
