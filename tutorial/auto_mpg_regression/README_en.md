@@ -1,4 +1,17 @@
-# Tabular Regression - Auto MPG
+# Auto MPG Regression
+
+<h4 align="center">
+    <p>
+        <a href="README.md">한국어</a> |
+        <b>English</b> |
+    <p>
+</h4>
+
+<h3 align="center">
+    <p>The MLOps platform to Let your AI run</p>
+</h3>
+
+## Introduction
 
 In this tutorial, we will perform tabular regression on the AutoMPG dataset using a runway pipeline. The goal is to load the tabular data, train a regression model, and then save it for future use.
 
