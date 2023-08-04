@@ -1,5 +1,18 @@
 # Robotarm Anomaly Detection
 
+<h4 align="center">
+    <p>
+        <a href="README.md">한국어</a> |
+        <b>English</b> |
+    <p>
+</h4>
+
+<h3 align="center">
+    <p>The MLOps platform to Let your AI run</p>
+</h3>
+
+## Introduction
+
 We use the Link included in Runway to load a table-formatted dataset and train a regression model, which will then be saved. We also set up and save a pipeline to reuse the written model training code for future retraining.
 
 > 📘 For quick execution, you can utilize the following Jupyter Notebook.  

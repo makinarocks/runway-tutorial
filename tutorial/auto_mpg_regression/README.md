@@ -1,4 +1,4 @@
-# Tabular Regression - Auto MPG
+# Auto MPG Regression
 
 <h4 align="center">
     <p>
@@ -6,6 +6,10 @@
         <a href="README_en.md">English</a> |
     <p>
 </h4>
+
+<h3 align="center">
+    <p>The MLOps platform to Let your AI run</p>
+</h3>
 
 ## Introduction
 

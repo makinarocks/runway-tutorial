@@ -1,5 +1,18 @@
 # Object Detection
 
+<h4 align="center">
+    <p>
+        <b>한국어</b> |
+        <a href="README_en.md">English</a> |
+    <p>
+</h4>
+
+<h3 align="center">
+    <p>The MLOps platform to Let your AI run</p>
+</h3>
+
+## Introduction
+
 Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장합니다.  
 작성한 모델 학습 코드를 재학습에 활용하기 위해 파이프라인을 구성하고 저장합니다.
 
