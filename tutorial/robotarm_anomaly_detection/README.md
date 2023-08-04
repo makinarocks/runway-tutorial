@@ -3,7 +3,7 @@
 <h4 align="center">
     <p>
         <b>한국어</b> |
-        <a href="README_en.md">English</a> |
+        <a href="README_en.md">English</a>
     <p>
 </h4>
 
