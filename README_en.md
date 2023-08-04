@@ -33,19 +33,19 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ## Runway Document
 
-Runway 의 각 기능별 사용 설명은 [공식 문서](https://docs.mrxrunway.ai/docs) 에서 확인할 수 있습니다.
+Check [Official Runway Documents](https://docs.mrxrunway.ai/docs) for more information about each Runway component usage.
 
 ## Tutorials
 
-자연어 처리:
+In Natural Language Processing:
 
-- [Sentiment classification with IMDB dataset and huggingface](tutorial/sentiment_classification_with_huggingface/README.md)
+- [Sentiment classification with IMDB dataset and huggingface](tutorial/sentiment_classification_with_huggingface/README_en.md)
 
-컴퓨터 비전:
+In Computer Vision:
 
-- [Object detection with Pytorch FasterRCNN](tutorial/object_detection/README.md)
+- [Object detection with Pytorch FasterRCNN](tutorial/object_detection/README_en.md)
 
-태뷸러 데이터:
+In Tabular Dataset:
 
-- [Tabular regression with auto mpg dataset](tutorial/auto_mpg_regression/README.md)
-- [Robotarm anomaly detection with scikit-learn PCA](tutorial/robotarm_anomaly_detection/README.md)
+- [Tabular regression with auto mpg dataset](tutorial/auto_mpg_regression/README_en.md)
+- [Robotarm anomaly detection with scikit-learn PCA](tutorial/robotarm_anomaly_detection/README_en.md)
