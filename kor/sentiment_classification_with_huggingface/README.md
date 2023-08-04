@@ -4,8 +4,8 @@ Runway에 포함된 Link를 사용하여 Huggingface 모델을 학습하고 저�
 작성한 모델 학습 코드를 재학습에 활용하기 위해 파이프라인을 구성하고 저장합니다.
 
 > 📘 빠른 실행을 위해 아래의 주피터 노트북을 활용할 수 있습니다.  
-> 아래의 주피터 노트북을 다운로드 받아 실행할 경우, "my-text-model" 이름의 모델이 생성되어 Runway에 저장됩니다.  
-> 
+> 아래의 주피터 노트북을 다운로드 받아 실행할 경우, "my-text-model" 이름의 모델이 생성되어 Runway에 저장됩니다.
+>
 > **[sentiment classification with huggingface](https://drive.google.com/uc?export=download&id=1lbONDH69PuaJXrlxed3P6UlCfLAWaoqo)**
 
 ![link pipeline](../../assets/sentiment_classification_with_huggingface/link_pipeline.png)
@@ -47,19 +47,20 @@ Runway에 포함된 Link를 사용하여 Huggingface 모델을 학습하고 저�
 2. 생성한 데이터셋을 선택하고 variable 이름을 적습니다.
 3. 코드를 생성하고 Link 컴포넌트로 등록합니다.
 
-    ```python
-    import pandas as pd
+   ```python
+   import pandas as pd
 
-    df = pd.read_parquet(RUNWAY_DATA_PATH)
-    ```
+   df = pd.read_parquet(RUNWAY_DATA_PATH)
+   ```
+
 4. Pandas 데이터 프레임으로 Huggingface Dataset 을 생성합니다.
 
-    ```python
-    from datasets import Dataset
+   ```python
+   from datasets import Dataset
 
-    ds = Dataset.from_pandas(df.sample(1000))
-    ds.set_format("pt")
-    ```
+   ds = Dataset.from_pandas(df.sample(1000))
+   ds.set_format("pt")
+   ```
 
 #### 데이터 전처리
 
@@ -67,115 +68,122 @@ Runway에 포함된 Link를 사용하여 Huggingface 모델을 학습하고 저�
 
 1. 토크나이저로 사용할 아키텍쳐를 정하기 위해서 Link 파라미터로 MODEL_ARCH_NAME 에 "distilbert-base-uncased" 를 등록합니다.
 
-    ![link parameter](../../assets/sentiment_classification_with_huggingface/link_parameter.png)
+   ![link parameter](../../assets/sentiment_classification_with_huggingface/link_parameter.png)
 
 2. 토크나이저를 불러오고 전처리 코드를 작성합니다.
 
-    ```python
-    from transformers import AutoTokenizer, DataCollatorWithPadding
+   ```python
+   from transformers import AutoTokenizer, DataCollatorWithPadding
 
 
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_ARCH_NAME)
-    data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
+   tokenizer = AutoTokenizer.from_pretrained(MODEL_ARCH_NAME)
+   data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
 
-    def preprocess_function(examples):
-        return tokenizer(examples["text"], truncation=True)
-    ```
+   def preprocess_function(examples):
+       return tokenizer(examples["text"], truncation=True)
+   ```
 
 3. 데이터에 전처리를 수행합니다.
 
-    ```python
-    tokenized_ds = ds.map(preprocess_function, batch_size=True)
-    ```
+   ```python
+   tokenized_ds = ds.map(preprocess_function, batch_size=True)
+   ```
 
 ### 모델 학습
 
 1. Transformer 의 `AutoModelForSequenceClassification` 모듈을 이용해 모델을 불러옵니다.
 
-    ```python
-    import torch
-    from transformers import AutoModelForSequenceClassification
+   ```python
+   import torch
+   from transformers import AutoModelForSequenceClassification
 
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    id2label = {0: "NEGATIVE", 1: "POSITIVE"}
-    label2id = {"NEGATIVE": 0, "POSITIVE": 1}
-    model = AutoModelForSequenceClassification.from_pretrained(
-        MODEL_ARCH_NAME, num_labels=2, id2label=id2label, label2id=label2id
-    ).to(device)
-    ```
+   device = "cuda" if torch.cuda.is_available() else "cpu"
+   id2label = {0: "NEGATIVE", 1: "POSITIVE"}
+   label2id = {"NEGATIVE": 0, "POSITIVE": 1}
+   model = AutoModelForSequenceClassification.from_pretrained(
+       MODEL_ARCH_NAME, num_labels=2, id2label=id2label, label2id=label2id
+   ).to(device)
+   ```
+
 2. 불러온 모델과 학습용 데이터셋을 활용하여, 모델 학습을 수행합니다.
 
-    ```python
-    from transformers import TrainingArguments, Trainer
+   ```python
+   from transformers import TrainingArguments, Trainer
 
 
-    training_args = TrainingArguments(
-        output_dir="tmp",
-        learning_rate=2e-5,
-        per_device_train_batch_size=4,
-        num_train_epochs=1,
-        weight_decay=0.01,
-    )
+   training_args = TrainingArguments(
+       output_dir="tmp",
+       learning_rate=2e-5,
+       per_device_train_batch_size=4,
+       num_train_epochs=1,
+       weight_decay=0.01,
+   )
 
-    trainer = Trainer(
-        model=model,
-        args=training_args,
-        train_dataset=tokenized_ds,
-        tokenizer=tokenizer,
-        data_collator=data_collator,
-    )
+   trainer = Trainer(
+       model=model,
+       args=training_args,
+       train_dataset=tokenized_ds,
+       tokenizer=tokenizer,
+       data_collator=data_collator,
+   )
 
-    trainer.train()
-    ```
+   trainer.train()
+   ```
 
 ### 모델 저장
+
 #### 모델 랩핑 클래스
 
 1. API 서빙에 이용할 수 있도록 HuggingModel 클래스를 작성합니다.
 
-    ```python
-    import pandas as pd
+   ```python
+   import pandas as pd
 
 
-    class HuggingModel:
-        def __init__(self, pipeline):
-            self.pipeline = pipeline
-        
-        def predict(self, X):
-            result = self.pipeline(X["text"].to_list())
-            return pd.DataFrame.from_dict(result)
-    ```
+   class HuggingModel:
+       def __init__(self, pipeline):
+           self.pipeline = pipeline
+
+       def predict(self, X):
+           result = self.pipeline(X["text"].to_list())
+           return pd.DataFrame.from_dict(result)
+   ```
+
 2. Transformer 파이프라인을 생성하고 HuggingModel 로 랩핑합니다.
 
-    ```python
-    from transformers import pipeline
+   ```python
+   from transformers import pipeline
 
 
-    model = model.to("cpu")
-    pipe = pipeline("text-classification", model=model, tokenizer=tokenizer)
+   model = model.to("cpu")
+   pipe = pipeline("text-classification", model=model, tokenizer=tokenizer)
 
-    hug_model = HuggingModel(pipe)
+   hug_model = HuggingModel(pipe)
+   ```
 
 #### 모델 저장
 
-> 📘  모델 저장 방법에 대한 구체적인 가이드는 **[모델 저장](https://docs.mrxrunway.ai/docs/%EB%AA%A8%EB%8D%B8-%EC%A0%80%EC%9E%A5)** 문서에서 확인할 수 있습니다.
+> 📘 모델 저장 방법에 대한 구체적인 가이드는 **[모델 저장](https://docs.mrxrunway.ai/docs/%EB%AA%A8%EB%8D%B8-%EC%A0%80%EC%9E%A5)** 문서에서 확인할 수 있습니다.
 
 1. 모델 학습에 사용한 학습 데이터의 샘플을 생성합니다.
 
-    ```python
-    input_sample = df.sample(1).drop(columns=["label"])
-    input_samples
-    ```
+   ```python
+   input_sample = df.sample(1).drop(columns=["label"])
+   input_samples
+   ```
 
-    ```
+   ```
+
+   ```
+
 2. Runway code snippet 의 save model을 사용해 모델을 저장하는 코드를 생성합니다.
 
-    ```python
-    import runway
+   ```python
+   import runway
 
-    runway.log_model(model_name="my-text-model", model=hug_model, input_samples={"predict": input_sample})
-    ```
+   runway.log_model(model_name="my-text-model", model=hug_model, input_samples={"predict": input_sample})
+   ```
 
 ## 파이프라인 구성 및 저장
 
@@ -184,13 +192,13 @@ Runway에 포함된 Link를 사용하여 Huggingface 모델을 학습하고 저�
 1. 파이프라인으로 구성할 코드 셀을 선택하여 컴포넌트로 설정합니다.
 2. 파이프라인으로 구성이 완료되면, 전체 파이프라인을 실행하여 정상 동작 여부를 확인합니다.
 3. 파이프라인의 정상 동작 확인 후, 파이프라인을 Runway에 저장합니다.
-    1. 좌측 패널 영역의 Upload Pipeline을 클릭합니다.
-    2. Pipeline 저장 옵션을 선택합니다.
-        1. 신규 저장의 경우, New Pipeline을 선택합니다.
-        2. 기존 파이프라인의 업데이트일 경우, Version Update를 선택합니다.
-    3. 파이프라인 저장을 위한 값을 입력 후, Save를 클릭합니다.
+   1. 좌측 패널 영역의 Upload Pipeline을 클릭합니다.
+   2. Pipeline 저장 옵션을 선택합니다.
+      1. 신규 저장의 경우, New Pipeline을 선택합니다.
+      2. 기존 파이프라인의 업데이트일 경우, Version Update를 선택합니다.
+   3. 파이프라인 저장을 위한 값을 입력 후, Save를 클릭합니다.
 4. Runway 프로젝트 메뉴에서 Pipeline 페이지로 이동합니다.
-5. 저장한 파이프라인의 이름을 클릭하면 파이프라인 상세 페이지로 진입합니다. 
+5. 저장한 파이프라인의 이름을 클릭하면 파이프라인 상세 페이지로 진입합니다.
 
 ## 모델 배포
 
@@ -201,11 +209,12 @@ Runway에 포함된 Link를 사용하여 Huggingface 모델을 학습하고 저�
 1. 배포된 모델을 실험하기 위한 [데모 사이트](http://demo.service.mrxrunway.ai/object)에 접속합니다.
 2. 데모사이트에 접속하면 아래와 같은 화면이 나옵니다.
 
-    ![demo web](../../assets/sentiment_classification_with_huggingface/demo-web.png)
+   ![demo web](../../assets/sentiment_classification_with_huggingface/demo-web.png)
 
 3. API Endpoint, 발급 받은 API Token, 예측할 문장을 입력합니다.
 
-    ![demo fill field](../../assets/sentiment_classification_with_huggingface/demo-fill-field.png)
+   ![demo fill field](../../assets/sentiment_classification_with_huggingface/demo-fill-field.png)
+
 4. 결과를 받을 수 있습니다.
 
-    ![demo result](../../assets/sentiment_classification_with_huggingface/demo-result.png)
+   ![demo result](../../assets/sentiment_classification_with_huggingface/demo-result.png)

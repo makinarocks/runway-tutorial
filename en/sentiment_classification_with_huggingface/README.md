@@ -5,7 +5,7 @@ We also set up and save a pipeline to reuse the written model training code for 
 
 > 📘 For quick execution, you can utilize the following Jupyter Notebook.  
 > If you download and execute the Jupyter Notebook below, a model named "my-text-model" will be created and saved in Runway.
-> 
+>
 > **[sentiment classification with huggingface](https://drive.google.com/uc?export=download&id=1lbONDH69PuaJXrlxed3P6UlCfLAWaoqo)**
 
 ![link pipeline](../../assets/sentiment_classification_with_huggingface/link_pipeline.png)
@@ -27,16 +27,15 @@ We also set up and save a pipeline to reuse the written model training code for 
 6. Choose the file to include in the dataset using the file explorer or drag-and-drop.
 7. Click on `Create`.
 
-
 ## Link
 
 ### Package Preparation
 
 1. Install the required packages for the tutorial.
 
-    ```python
-    !pip install transformers[torch] datasets evaluate
-    ```
+   ```python
+   !pip install transformers[torch] datasets evaluate
+   ```
 
 ### Data
 
@@ -48,19 +47,20 @@ We also set up and save a pipeline to reuse the written model training code for 
 2. Select the created dataset and assign it to a variable.
 3. Register the code with the Link component.
 
-    ```python
-    import pandas as pd
+   ```python
+   import pandas as pd
 
-    df = pd.read_parquet(RUNWAY_DATA_PATH)
-    ```
+   df = pd.read_parquet(RUNWAY_DATA_PATH)
+   ```
+
 4. Create Huggingface Dataset with Pandas dataframe.
 
-    ```python
-    from datasets import Dataset
+   ```python
+   from datasets import Dataset
 
-    ds = Dataset.from_pandas(df.sample(1000))
-    ds.set_format("pt")
-    ```
+   ds = Dataset.from_pandas(df.sample(1000))
+   ds.set_format("pt")
+   ```
 
 #### Data Preprocessing
 
@@ -68,95 +68,99 @@ We also set up and save a pipeline to reuse the written model training code for 
 
 1. To choose the architecture for the tokenizer, register "distilbert-base-uncased" in the MODEL_ARCH_NAME Link parameter.
 
-    ![link parameter](../../assets/sentiment_classification_with_huggingface/link_parameter.png)
+   ![link parameter](../../assets/sentiment_classification_with_huggingface/link_parameter.png)
 
 2. Load the tokenizer and write the preprocessing code.
 
-    ```python
-    from transformers import AutoTokenizer, DataCollatorWithPadding
+   ```python
+   from transformers import AutoTokenizer, DataCollatorWithPadding
 
 
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_ARCH_NAME)
-    data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
+   tokenizer = AutoTokenizer.from_pretrained(MODEL_ARCH_NAME)
+   data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
 
-    def preprocess_function(examples):
-        return tokenizer(examples["text"], truncation=True)
-    ```
+   def preprocess_function(examples):
+       return tokenizer(examples["text"], truncation=True)
+   ```
 
 3. Perform data preprocessing.
 
-    ```python
-    tokenized_ds = ds.map(preprocess_function, batch_size=True)
-    ```
+   ```python
+   tokenized_ds = ds.map(preprocess_function, batch_size=True)
+   ```
 
 ### Model Training
 
 1. Use the Transformer's `AutoModelForSequenceClassification` module to load the model.
 
-    ```python
-    import torch
-    from transformers import AutoModelForSequenceClassification
+   ```python
+   import torch
+   from transformers import AutoModelForSequenceClassification
 
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    id2label = {0: "NEGATIVE", 1: "POSITIVE"}
-    label2id = {"NEGATIVE": 0, "POSITIVE": 1}
-    model = AutoModelForSequenceClassification.from_pretrained(
-        MODEL_ARCH_NAME, num_labels=2, id2label=id2label, label2id=label2id
-    ).to(device)
-    ```
+   device = "cuda" if torch.cuda.is_available() else "cpu"
+   id2label = {0: "NEGATIVE", 1: "POSITIVE"}
+   label2id = {"NEGATIVE": 0, "POSITIVE": 1}
+   model = AutoModelForSequenceClassification.from_pretrained(
+       MODEL_ARCH_NAME, num_labels=2, id2label=id2label, label2id=label2id
+   ).to(device)
+   ```
+
 2. Use the loaded model and the training dataset to perform model training.
 
-    ```python
-    from transformers import TrainingArguments, Trainer
+   ```python
+   from transformers import TrainingArguments, Trainer
 
 
-    training_args = TrainingArguments(
-        output_dir="tmp",
-        learning_rate=2e-5,
-        per_device_train_batch_size=4,
-        num_train_epochs=1,
-        weight_decay=0.01,
-    )
+   training_args = TrainingArguments(
+       output_dir="tmp",
+       learning_rate=2e-5,
+       per_device_train_batch_size=4,
+       num_train_epochs=1,
+       weight_decay=0.01,
+   )
 
-    trainer = Trainer(
-        model=model,
-        args=training_args,
-        train_dataset=tokenized_ds,
-        tokenizer=tokenizer,
-        data_collator=data_collator,
-    )
+   trainer = Trainer(
+       model=model,
+       args=training_args,
+       train_dataset=tokenized_ds,
+       tokenizer=tokenizer,
+       data_collator=data_collator,
+   )
 
-    trainer.train()
-    ```
+   trainer.train()
+   ```
 
 ### Model Saving
+
 #### Model Wrapping Class
 
 1. Write the HuggingModel class to be used for API serving.
 
-    ```python
-    import pandas as pd
+   ```python
+   import pandas as pd
 
 
-    class HuggingModel:
-        def __init__(self, pipeline):
-            self.pipeline = pipeline
-        
-        def predict(self, X):
-            result = self.pipeline(X["text"].to_list())
-            return pd.DataFrame.from_dict(result)
-    ```
+   class HuggingModel:
+       def __init__(self, pipeline):
+           self.pipeline = pipeline
+
+       def predict(self, X):
+           result = self.pipeline(X["text"].to_list())
+           return pd.DataFrame.from_dict(result)
+   ```
+
 2. Create the Transformer pipeline and wrap it with the HuggingModel.
 
-    ```python
-    from transformers import pipeline
+   ```python
+   from transformers import pipeline
 
 
-    model = model.to("cpu")
-    pipe = pipeline("text-classification", model=model, tokenizer=tokenizer)
+   model = model.to("cpu")
+   pipe = pipeline("text-classification", model=model, tokenizer=tokenizer)
 
-    hug_model = HuggingModel(pipe)
+   hug_model = HuggingModel(pipe)
+   ```
 
 #### Model Saving
 
@@ -164,19 +168,22 @@ We also set up and save a pipeline to reuse the written model training code for 
 
 1. Create a sample input data from the training dataset.
 
-    ```python
-    input_sample = df.sample(1).drop(columns=["label"])
-    input_samples
-    ```
+   ```python
+   input_sample = df.sample(1).drop(columns=["label"])
+   input_samples
+   ```
 
-    ```
+   ```
+
+   ```
+
 2. Use the "save model" option from the Runway code snippet to save the model.
 
-    ```python
-    import runway
+   ```python
+   import runway
 
-    runway.log_model(model_name="my-text-model", model=hug_model, input_samples={"predict": input_sample})
-    ```
+   runway.log_model(model_name="my-text-model", model=hug_model, input_samples={"predict": input_sample})
+   ```
 
 ## Pipeline Configuration and Saving
 
@@ -185,11 +192,11 @@ We also set up and save a pipeline to reuse the written model training code for 
 1. Select the code cells to be included in the pipeline and configure them as components.
 2. Once the pipeline is complete, run the entire pipeline to verify that it works correctly.
 3. After confirming the pipeline's successful operation, save the pipeline in Runway.
-    1. Click on "Upload Pipeline" in the left panel area.
-    2. Choose the pipeline saving option:
-        1. For new pipeline, select "New Pipeline."
-        2. For updating an existing pipeline, select "Update Version"
-    3. Provide the necessary information to save the pipeline.
+   1. Click on "Upload Pipeline" in the left panel area.
+   2. Choose the pipeline saving option:
+      1. For new pipeline, select "New Pipeline."
+      2. For updating an existing pipeline, select "Update Version"
+   3. Provide the necessary information to save the pipeline.
 4. Go back to Runway project page, and click Pipeline.
 5. You can now access the saved pipeline in the Runway project menu under the Pipeline page.
 
@@ -202,12 +209,12 @@ We also set up and save a pipeline to reuse the written model training code for 
 1. To test the deployed model, you can use the following [demo website](http://demo.service.mrxrunway.ai/emotion).
 2. If you are in demo site you will see the following screen:
 
-    ![demo web](../../assets/sentiment_classification_with_huggingface/demo-web.png)
+   ![demo web](../../assets/sentiment_classification_with_huggingface/demo-web.png)
 
 3. Input the API Endpoint, API Token received, and the sentence to predict.
 
-    ![demo fill field](../../assets/sentiment_classification_with_huggingface/demo-fill-field.png)
+   ![demo fill field](../../assets/sentiment_classification_with_huggingface/demo-fill-field.png)
 
 4. You will receive the result.
 
-    ![demo result](../../assets/sentiment_classification_with_huggingface/demo-result.png)
+   ![demo result](../../assets/sentiment_classification_with_huggingface/demo-result.png)
