@@ -186,10 +186,6 @@ We also set up and save a pipeline to reuse the written model training code for 
    input_samples
    ```
 
-   ```
-
-   ```
-
 2. Use the "save model" option from the Runway code snippet to save the model.
 
    ```python

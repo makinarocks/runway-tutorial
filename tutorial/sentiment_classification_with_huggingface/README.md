@@ -186,10 +186,6 @@ Runway에 포함된 Link를 사용하여 Huggingface 모델을 학습하고 저�
    input_samples
    ```
 
-   ```
-
-   ```
-
 2. Runway code snippet 의 save model을 사용해 모델을 저장하는 코드를 생성합니다.
 
    ```python
