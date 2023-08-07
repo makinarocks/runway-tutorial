@@ -1,4 +1,4 @@
-## Sentiment Classification with Huggingface
+# Sentiment Classification with Huggingface
 
 <h4 align="center">
     <p>

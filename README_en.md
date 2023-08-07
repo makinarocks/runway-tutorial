@@ -28,7 +28,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 </h3>
 
 <h3 align="center">
-    <img src="assets/mainimage.png" height="250" style="max-width: 100%;"></a>
+    <img src="assets/mainimage.png" width="550"></a>
 </h3>
 
 ## Runway Document
