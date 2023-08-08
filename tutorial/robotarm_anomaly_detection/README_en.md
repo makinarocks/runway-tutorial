@@ -44,9 +44,9 @@ We use the Link included in Runway to load a table-formatted dataset and train a
 ### Package Preparation
 
 1. (Optional) Install the required packages for the tutorial.
-   ```python
-   !pip install pandas scikit-learn
-   ```
+    ```python
+    !pip install pandas scikit-learn
+    ```
 
 ### Data
 
@@ -58,32 +58,32 @@ We use the Link included in Runway to load a table-formatted dataset and train a
 2. Select the created dataset and assign it to a variable.
 3. Register the code with the Link component.
 
-   ```python
-   import os
-   import pandas as pd
+    ```python
+    import os
+    import pandas as pd
 
-   dfs = []
-   for dirname, _, filenames in os.walk(RUNWAY_DATA_PATH):
-       for filename in filenames:
-           dfs += [pd.read_csv(os.path.join(dirname, filename))]
-   df = pd.concat(dfs)
-   ```
+    dfs = []
+    for dirname, _, filenames in os.walk(RUNWAY_DATA_PATH):
+        for filename in filenames:
+            dfs += [pd.read_csv(os.path.join(dirname, filename))]
+    df = pd.concat(dfs)
+    ```
 
 #### Data Preprocessing
 
 1. Set the index in the dataset and remove the "id" values, then use only a total of 1000 data points.
 
-   ```python
-   proc_df = raw_df.set_index("datetime").drop(columns=["id"]).tail(1000)
-   ```
+    ```python
+    proc_df = raw_df.set_index("datetime").drop(columns=["id"]).tail(1000)
+    ```
 
 2. Split the dataset into training and testing sets.
 
-   ```python
-   from sklearn.model_selection import train_test_split
+    ```python
+    from sklearn.model_selection import train_test_split
 
-   train, valid = train_test_split(proc_df, test_size=0.2)
-   ```
+    train, valid = train_test_split(proc_df, test_size=0.2)
+    ```
 
 ### Model
 
@@ -91,43 +91,43 @@ We use the Link included in Runway to load a table-formatted dataset and train a
 
 1. Write a model class for model training.
 
-   ```python
-   import pandas as pd
-   from sklearn.decomposition import PCA
-   from sklearn.preprocessing import StandardScaler
+    ```python
+    import pandas as pd
+    from sklearn.decomposition import PCA
+    from sklearn.preprocessing import StandardScaler
 
 
-   class PCADetector:
-       def __init__(self, n_components):
-           self._use_columns = ...
-           self._scaler = StandardScaler()
-           self._pca = PCA(n_components=n_components)
+    class PCADetector:
+        def __init__(self, n_components):
+            self._use_columns = ...
+            self._scaler = StandardScaler()
+            self._pca = PCA(n_components=n_components)
 
-       def fit(self, X):
-           self._use_columns = X.columns
-           X_scaled = self._scaler.fit_transform(X)
-           self._pca.fit(X_scaled)
+        def fit(self, X):
+            self._use_columns = X.columns
+            X_scaled = self._scaler.fit_transform(X)
+            self._pca.fit(X_scaled)
 
-       def predict(self, X):
-           X = X[self._use_columns]
-           X_scaled = self._scaler.transform(X)
-           recon = self._recon(X_scaled)
-           recon_err = ((X_scaled - recon) ** 2).mean(1)
-           recon_err_df = pd.DataFrame(recon_err, columns=["anomaly_score"], index=X.index)
-           return recon_err_df
+        def predict(self, X):
+            X = X[self._use_columns]
+            X_scaled = self._scaler.transform(X)
+            recon = self._recon(X_scaled)
+            recon_err = ((X_scaled - recon) ** 2).mean(1)
+            recon_err_df = pd.DataFrame(recon_err, columns=["anomaly_score"], index=X.index)
+            return recon_err_df
 
-       def _recon(self, X):
-           z = self._pca.transform(X)
-           recon = self._pca.inverse_transform(z)
-           return recon
+        def _recon(self, X):
+            z = self._pca.transform(X)
+            recon = self._pca.inverse_transform(z)
+            return recon
 
-       def reconstruct(self, X):
-           X_scaled = self._scaler.transform(X)
-           recon_scaled = self._recon(X_scaled)
-           recon = self._scaler.inverse_transform(recon_scaled)
-           recon_df = pd.DataFrame(recon, index=X.index, columns=X.columns)
-           return recon_df
-   ```
+        def reconstruct(self, X):
+            X_scaled = self._scaler.transform(X)
+            recon_scaled = self._recon(X_scaled)
+            recon = self._scaler.inverse_transform(recon_scaled)
+            recon_df = pd.DataFrame(recon, index=X.index, columns=X.columns)
+            return recon_df
+    ```
 
 ### Model Training
 
@@ -135,23 +135,23 @@ We use the Link included in Runway to load a table-formatted dataset and train a
 
 1. To specify the number of components to use in PCA, register 2 in the N_COMPONENTS Link parameter.
 
-   ![link parameter](../../assets/robotarm_anomaly_detection/link_parameter.png)
+    ![link parameter](../../assets/robotarm_anomaly_detection/link_parameter.png)
 
 2. Use the Link parameter into the declared model class, and perform model training using the training dataset and evaluate model.
 
-   ```python
+    ```python
 
-   parameters = {"n_components": N_COMPONENTS}
+    parameters = {"n_components": N_COMPONENTS}
 
-   detector = PCADetector(n_components=parameters["n_components"])
-   detector.fit(train)
+    detector = PCADetector(n_components=parameters["n_components"])
+    detector.fit(train)
 
-   train_pred = detector.predict(train)
-   valid_pred = detector.predict(valid)
+    train_pred = detector.predict(train)
+    valid_pred = detector.predict(valid)
 
-   mean_train_recon_err = train_pred.mean()
-   mean_valid_recon_err = valid_pred.mean()
-   ```
+    mean_train_recon_err = train_pred.mean()
+    mean_valid_recon_err = valid_pred.mean()
+    ```
 
 ### Model Saving
 
@@ -159,27 +159,27 @@ We use the Link included in Runway to load a table-formatted dataset and train a
 
 1. Create a sample input data from the training dataset.
 
-   ```python
-   input_sample = proc_df.sample(1)
-   input_sample
-   ```
+    ```python
+    input_sample = proc_df.sample(1)
+    input_sample
+    ```
 
-2. Use the "save model" option from the Runway code snippet to save the model. And also save model related information.
+2. Use the "save model" option from the Runway code snippet to save the model. And also log the information that are related to the model.
 
-   ```python
-   import runway
+    ```python
+    import runway
 
-   # start run
-   runway.start_run()
+    # start run
+    runway.start_run()
 
-   # log model related info
-   runway.log_parameters(parameters)
-   runway.log_metric("mean_train_recon_err", mean_train_recon_err)
-   runway.log_metric("mean_valid_recon_err", mean_valid_recon_err)
+    # log model related info
+    runway.log_parameters(parameters)
+    runway.log_metric("mean_train_recon_err", mean_train_recon_err)
+    runway.log_metric("mean_valid_recon_err", mean_valid_recon_err)
 
-   # log model
-   runway.log_model(model_name="pca-model", model=detector, input_samples={"predict": input_sample})
-   ```
+    # log model
+    runway.log_model(model_name="pca-model", model=detector, input_samples={"predict": input_sample})
+    ```
 
 ## Pipeline Configuration and Saving
 
@@ -188,10 +188,10 @@ We use the Link included in Runway to load a table-formatted dataset and train a
 1. Select the code cells to be included in the pipeline and configure them as components.
 2. Once the pipeline is complete, run the entire pipeline to verify that it works correctly.
 3. After confirming the pipeline's successful operation, save the pipeline in Runway.
-   1. Click on "Upload Pipeline" in the left panel area.
-   2. Choose the pipeline saving option:
-      1. For new pipeline, select "New Pipeline."
-      2. For updating an existing pipeline, select "Update Version"
-   3. Provide the necessary information to save the pipeline.
+    1. Click on "Upload Pipeline" in the left panel area.
+    2. Choose the pipeline saving option:
+        1. For new pipeline, select "New Pipeline."
+        2. For updating an existing pipeline, select "Update Version"
+    3. Provide the necessary information to save the pipeline.
 4. Go back to Runway project page, and click Pipeline.
 5. You can now access the saved pipeline in the Runway project menu under the Pipeline page.
