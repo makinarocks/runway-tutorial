@@ -19,7 +19,7 @@ Runway에 포함된 Link를 사용하여 XGBoost 모델을 학습하고 저장�
 > 📘 빠른 실행을 위해 아래의 주피터 노트북을 활용할 수 있습니다.  
 > 아래의 주피터 노트북을 다운로드 받아 실행할 경우, "my-xgboost-regressor" 이름의 모델이 생성되어 Runway에 저장됩니다.
 >
-> **[wind_power_prediction_with_xgboost](https://drive.google.com/uc?export=download&id=1bp2vAvrKvPhaDgDAudZqpN_l5bmd2XmO)**
+> **[wind_power_prediction_with_xgboost](https://drive.google.com/uc?export=download&id=16ruQV9Q4sJuxvN7IxrPjTqHSv5gNducc)**
 
 ![link pipeline](../../assets/wind_power_prediction_with_xgboost/link_pipeline.png)
 
