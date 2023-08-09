@@ -161,10 +161,11 @@ In this tutorial, we will perform tabular regression on the AutoMPG dataset usin
 2. Use the "save model" option from the Runway code snippet to save the model.
 
     ```python
-     import runway
+    import runway
 
-     runway.log_metric("mse", mse)
-     runway.log_model(model_name='auto-mpg-reg-model-sklearn', model=runway_regressor, input_samples={'predict': input_samples})
+    runway.start_run()
+    runway.log_metric("mse", mse)
+    runway.log_model(model_name='auto-mpg-reg-model-sklearn', model=runway_regressor, input_samples={'predict': input_samples})
     ```
 
 ## Pipeline Configuration and Saving

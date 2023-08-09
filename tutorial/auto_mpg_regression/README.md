@@ -162,10 +162,11 @@ Runway에 포함된 Link를 사용하여 테이블 형식 데이터 세트를 �
 2. Runway code snippet 의 save model을 사용해 모델을 저장하는 코드를 생성합니다.
 
     ```python
-     import runway
+    import runway
 
-     runway.log_metric("mse", mse)
-     runway.log_model(model_name='auto-mpg-reg-model-sklearn', model=runway_regressor, input_samples={'predict': input_samples})
+    runway.start_run()
+    runway.log_metric("mse", mse)
+    runway.log_model(model_name='auto-mpg-reg-model-sklearn', model=runway_regressor, input_samples={'predict': input_samples})
     ```
 
 ## 파이프라인 구성 및 저장
