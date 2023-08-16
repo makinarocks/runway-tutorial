@@ -63,16 +63,17 @@ Runway에 포함된 Link를 사용하여 Huggingface 모델을 학습하고 저�
     ```python
     import os
     import pandas as pd
+
     dfs = []
     for dirname, _, filenames in os.walk(RUNWAY_DATA_PATH):
-      for filename in filenames:
-         if filename.endswith(".csv"):
-               d = pd.read_csv(os.path.join(dirname, filename))
-         elif filename.endswith(".parquet"):
-               d = pd.read_parquet(os.path.join(dirname, filename))
-         else:
-               raise ValueError("Not valid file type")
-         dfs += [d]
+        for filename in filenames:
+            if filename.endswith(".csv"):
+                d = pd.read_csv(os.path.join(dirname, filename))
+            elif filename.endswith(".parquet"):
+                d = pd.read_parquet(os.path.join(dirname, filename))
+            else:
+                raise ValueError("Not valid file type")
+            dfs += [d]
     df = pd.concat(dfs)
     ```
 

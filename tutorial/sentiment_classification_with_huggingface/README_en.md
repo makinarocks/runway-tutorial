@@ -63,16 +63,17 @@ We also set up and save a pipeline to reuse the written model training code for 
     ```python
     import os
     import pandas as pd
+
     dfs = []
     for dirname, _, filenames in os.walk(RUNWAY_DATA_PATH):
-      for filename in filenames:
-         if filename.endswith(".csv"):
-               d = pd.read_csv(os.path.join(dirname, filename))
-         elif filename.endswith(".parquet"):
-               d = pd.read_parquet(os.path.join(dirname, filename))
-         else:
-               raise ValueError("Not valid file type")
-         dfs += [d]
+        for filename in filenames:
+            if filename.endswith(".csv"):
+                d = pd.read_csv(os.path.join(dirname, filename))
+            elif filename.endswith(".parquet"):
+                d = pd.read_parquet(os.path.join(dirname, filename))
+            else:
+                raise ValueError("Not valid file type")
+            dfs += [d]
     df = pd.concat(dfs)
     ```
 

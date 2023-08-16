@@ -59,6 +59,25 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
 2. 생성한 데이터셋을 선택하고 variable 이름을 적습니다.
 3. 코드를 생성하고 Link 컴포넌트로 등록합니다.
 
+    ```python
+    import os
+    from pycocotools.coco import COCO
+
+    # RUNWAY_DATA_PATH was added to pipeline parameters.
+    # Pipeline parameters can be used in the cell added as a pipeline component.
+    # RUNWAY_DATA_PATH = "/home/jovyan/workspace/dataset/sample-coco"
+    config_file = None
+    for dirname, _, filenames in os.walk(RUNWAY_DATA_PATH):
+        for filename in filenames:
+            if filename.endswith(".json"):
+                config_file = os.path.join(dirname, filename)
+
+    if config_file is None:
+        raise ValueError("Can't find config file in given dataset")
+
+    coco = COCO(config_file)
+    ```
+
 #### 예제 데이터 추출
 
 1. 샘플 데이터 하나를 추출 후 이미지를 확인합니다.
@@ -193,39 +212,39 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
 2. 선언한 모델을 위에서 만든 데이터 로더를 통해 학습하고 모델의 성능을 평가합니다.
 
     ```python
-     import torch.optim as optim
-     from torchmetrics.detection import MeanAveragePrecision
+    import torch.optim as optim
+    from torchmetrics.detection import MeanAveragePrecision
 
-     params = [p for p in model.parameters() if p.requires_grad]
-     optimizer = optim.SGD(params, lr=1e-5)
+    params = [p for p in model.parameters() if p.requires_grad]
+    optimizer = optim.SGD(params, lr=1e-5)
 
-     model.train()
-     for epoch in range(N_EPOCHS):
-         for imgs, annotations in data_loader:
-             imgs = list(img.to(device) for img in imgs)
-             annotations = [{k: v.to(device) for k, v in t.items()} for t in annotations]
-             loss_dict = model(imgs, annotations)
-             losses = sum(loss for loss in loss_dict.values())
+    model.train()
+    for epoch in range(N_EPOCHS):
+        for imgs, annotations in data_loader:
+            imgs = list(img.to(device) for img in imgs)
+            annotations = [{k: v.to(device) for k, v in t.items()} for t in annotations]
+            loss_dict = model(imgs, annotations)
+            losses = sum(loss for loss in loss_dict.values())
 
-             optimizer.zero_grad()
-             losses.backward()
-             optimizer.step()
+            optimizer.zero_grad()
+            losses.backward()
+            optimizer.step()
 
-     map_metric = MeanAveragePrecision().to(device)
-     model.eval()
-     with torch.no_grad():
-         preds = []
-         annos = []
-         for imgs, annotations in data_loader:
-             pred = model(list(img.to(device) for img in imgs))
-             anno = [{k: v.to(device) for k, v in t.items()} for t in annotations]
-             preds.extend(pred)
-             annos.extend(anno)
+    map_metric = MeanAveragePrecision().to(device)
+    model.eval()
+    with torch.no_grad():
+        preds = []
+        annos = []
+        for imgs, annotations in data_loader:
+            pred = model(list(img.to(device) for img in imgs))
+            anno = [{k: v.to(device) for k, v in t.items()} for t in annotations]
+            preds.extend(pred)
+            annos.extend(anno)
 
-     map_metric.update(preds, annos)
-     map_score = map_metric.compute()
+    map_metric.update(preds, annos)
+    map_score = map_metric.compute()
 
-     torch.cuda.empty_cache()
+    torch.cuda.empty_cache()
     ```
 
 ### 모델 추론
@@ -290,9 +309,9 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
 2. 학습이 완료된 모델을 ModelWrapper 로 모델을 랩핑합니다.
 
     ```python
-     model = model.cpu()
-     device = "cpu"
-     serve_model = ModelWrapper(model=model, device=device)
+    model = model.cpu()
+    device = "cpu"
+    serve_model = ModelWrapper(model=model, device=device)
     ```
 
 #### 샘플 이미지 추론
@@ -358,7 +377,7 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
     del draw
     ```
 
-3. 추론 결과를 확인합니다.  
+3. 추론 결과를 확인합니다.
    ![predict result](../../assets/object_detection/predict_result.png)
 
 ### 모델 저장
@@ -368,13 +387,13 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
 1. Runway code snippet 의 save model을 사용해 모델을 저장하는 코드를 생성합니다. 그리고 모델 과 관련된 정보를 저장합니다.
 
     ```python
-     import runway
+    import runway
 
-     del map_score["classes"]
-     runway.start_run()
-     runway.log_metrics(map_score)
+    del map_score["classes"]
+    runway.start_run()
+    runway.log_metrics(map_score)
 
-     runway.log_model(model_name="my-detection-model", model=serve_model, input_samples={'predict': input_sample})
+    runway.log_model(model_name="my-detection-model", model=serve_model, input_samples={'predict': input_sample})
     ```
 
 ## 파이프라인 구성 및 저장

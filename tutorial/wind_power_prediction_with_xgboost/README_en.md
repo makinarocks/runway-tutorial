@@ -177,15 +177,15 @@ Runway에 포함된 Link를 사용하여 XGBoost 모델을 학습하고 저장�
     import pandas as pd
 
     class RunwayModel:
-       def __init__(self, xgb_regressor):
-          self._regr = xgb_regressor
+        def __init__(self, xgb_regressor):
+            self._regr = xgb_regressor
 
-       def predict(self, X):
-          return pd.DataFrame(
+        def predict(self, X):
+            return pd.DataFrame(
                 {
-                   "activepower": self._regr.predict(X),
+                    "activepower": self._regr.predict(X),
                 }
-          )
+            )
     ```
 
 2. Wrap fitted `regr` with `RunwayModel`.

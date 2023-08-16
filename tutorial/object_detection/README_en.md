@@ -60,6 +60,25 @@ To utilize the written model training code for retraining, we construct and save
 2. Select the created dataset and assign it to a variable.
 3. Register the code with the Link component.
 
+    ```python
+    import os
+    from pycocotools.coco import COCO
+
+    # RUNWAY_DATA_PATH was added to pipeline parameters.
+    # Pipeline parameters can be used in the cell added as a pipeline component.
+    # RUNWAY_DATA_PATH = "/home/jovyan/workspace/dataset/sample-coco"
+    config_file = None
+    for dirname, _, filenames in os.walk(RUNWAY_DATA_PATH):
+        for filename in filenames:
+            if filename.endswith(".json"):
+                config_file = os.path.join(dirname, filename)
+
+    if config_file is None:
+        raise ValueError("Can't find config file in given dataset")
+
+    coco = COCO(config_file)
+    ```
+
 #### Extract a sample image
 
 1. Extract a sample data and check the image.
@@ -215,21 +234,21 @@ To utilize the written model training code for retraining, we construct and save
     model.eval()
     torch.cuda.empty_cache()
 
-     map_metric = MeanAveragePrecision().to(device)
-     model.eval()
-     with torch.no_grad():
-         preds = []
-         annos = []
-         for imgs, annotations in data_loader:
-             pred = model(list(img.to(device) for img in imgs))
-             anno = [{k: v.to(device) for k, v in t.items()} for t in annotations]
-             preds.extend(pred)
-             annos.extend(anno)
+    map_metric = MeanAveragePrecision().to(device)
+    model.eval()
+    with torch.no_grad():
+        preds = []
+        annos = []
+        for imgs, annotations in data_loader:
+            pred = model(list(img.to(device) for img in imgs))
+            anno = [{k: v.to(device) for k, v in t.items()} for t in annotations]
+            preds.extend(pred)
+            annos.extend(anno)
 
-     map_metric.update(preds, annos)
-     map_score = map_metric.compute()
+    map_metric.update(preds, annos)
+    map_score = map_metric.compute()
 
-     torch.cuda.empty_cache()
+    torch.cuda.empty_cache()
     ```
 
 ### Model Inference
@@ -294,9 +313,9 @@ To utilize the written model training code for retraining, we construct and save
 2. Wrap the trained model with ModelWrapper.
 
     ```python
-     model = model.cpu()
-     device = "cpu"
-     serve_model = ModelWrapper(model=model, device=device)
+    model = model.cpu()
+    device = "cpu"
+    serve_model = ModelWrapper(model=model, device=device)
     ```
 
 #### Sample Image Inference
@@ -374,11 +393,11 @@ To utilize the written model training code for retraining, we construct and save
     ```python
     import runway
 
-     del map_score["classes"]
-     runway.start_run()
-     runway.log_metrics(map_score)
+    del map_score["classes"]
+    runway.start_run()
+    runway.log_metrics(map_score)
 
-     runway.log_model(model_name="my-detection-model", model=serve_model, input_samples={'predict': input_sample})
+    runway.log_model(model_name="my-detection-model", model=serve_model, input_samples={'predict': input_sample})
     ```
 
 ## Pipeline Configuration and Saving
