@@ -16,8 +16,8 @@
 Runway에 포함된 Link를 사용하여 XGBoost 모델을 학습하고 저장합니다.  
 작성한 모델 학습 코드를 재학습에 활용하기 위해 파이프라인을 구성하고 저장합니다.
 
-> 📘 빠른 실행을 위해 아래의 주피터 노트북을 활용할 수 있습니다.  
-> 아래의 주피터 노트북을 다운로드 받아 실행할 경우, "my-xgboost-regressor" 이름의 모델이 생성되어 Runway에 저장됩니다.
+> 📘 For quick execution, you can utilize the following Jupyter Notebook.  
+> If you download and execute the Jupyter Notebook below, a model named ""my-xgboost-regressor" will be created and saved in Runway.
 >
 > **[wind_power_prediction_with_xgboost](https://drive.google.com/uc?export=download&id=16ruQV9Q4sJuxvN7IxrPjTqHSv5gNducc)**
 
@@ -25,11 +25,11 @@ Runway에 포함된 Link를 사용하여 XGBoost 모델을 학습하고 저장�
 
 ## Runway
 
-### 데이터셋 생성
+### create a dataset
 
-> 📘 이 튜토리얼은 Kaggle 에서 제공하는 [Wind Power Forecasting](https://www.kaggle.com/datasets/theforcecoder/wind-power-forecasting)입니다. 해당 데이터셋을 이용해 발전량 예측을 진행할 수 있습니다.
+> 📘 This tutorial use dataset [Wind Power Forecasting](https://www.kaggle.com/datasets/theforcecoder/wind-power-forecasting) from Kaggle. Using this dataset we can predict generate power prediction.
 >
-> Wind power forecasting 데이터셋은 아래 항목을 클릭하여 다운로드할 수 있습니다.  
+> Wind power forecasting dataset can download from below link.
 > **[Wind power forecasting dataset](https://drive.google.com/uc?export=download&id=16iE44jF7J6rCa01EGcUP1wuMrKJUdN7J)**
 
 1. Go to the Runway project menu and navigate to the dataset page.
@@ -42,7 +42,7 @@ Runway에 포함된 Link를 사용하여 XGBoost 모델을 학습하고 저장�
 
 ## Link
 
-### 패키지 설치
+### Install package
 
 1. Install the required packages for the tutorial.
 
@@ -50,9 +50,9 @@ Runway에 포함된 Link를 사용하여 XGBoost 모델을 학습하고 저장�
 !pip install xgboost
 ```
 
-### 데이터
+### Data
 
-#### 데이터 불러오기
+#### Load data
 
 > 📘 You can find detailed instructions on how to load the dataset in the [Import Dataset](https://docs.mrxrunway.ai/v0.13.0-Eng/docs/import-dataset).
 
@@ -77,7 +77,7 @@ Runway에 포함된 Link를 사용하여 XGBoost 모델을 학습하고 저장�
     df = pd.concat(dfs)
     ```
 
-#### 데이터 전처리
+#### Preprocess data
 
 1. Split data to X, y.
 
@@ -120,7 +120,7 @@ Runway에 포함된 Link를 사용하여 XGBoost 모델을 학습하고 저장�
     X_train, X_valid, y_train, y_valid = train_test_split(X_df, y_df, test_size=0.2)
     ```
 
-### 모델 학습
+### Train model
 
 > 📘 You can find guidance on registering Link parameters in the **[Set Pipeline Parameter](https://docs.mrxrunway.ai/v0.13.0-Eng/docs/set-pipeline-parameter)**.
 
@@ -167,9 +167,9 @@ Runway에 포함된 Link를 사용하여 XGBoost 모델을 학습하고 저장�
     mse = mean_squared_error(y_pred, y_valid)
     ```
 
-### 모델 저장
+### Upload model
 
-#### 모델 랩핑 클래스
+#### Model wrapping class
 
 1. Write the `RunwayModel` class to be used for API serving.
 
@@ -194,9 +194,9 @@ Runway에 포함된 Link를 사용하여 XGBoost 모델을 학습하고 저장�
     runway_model = RunwayModel(regr)
     ```
 
-#### 모델 저장
+#### Upload model
 
-> 📘 You can find detailed instructions on how to save the model in the [Upload Model](https://docs.mrxrunway.ai/v0.13.0-Eng/docs/upload-model).
+> 📘 You can find detailed instructions on how to save the model in the [Upload Model](https://docs.mrxrunway.ai/v0.13.1-Eng/docs/upload-model).
 
 1. Create a sample input data from the training dataset.
 

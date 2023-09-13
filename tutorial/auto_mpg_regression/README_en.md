@@ -147,9 +147,9 @@ In this tutorial, we will perform tabular regression on the AutoMPG dataset usin
     print('Mean Squared Error: {}'.format(mse))
     ```
 
-### Model Saving
+### Upload Model
 
-> 📘 You can find detailed instructions on how to save the model in the [Upload Model](https://docs.mrxrunway.ai/v0.13.0-Eng/docs/upload-model).
+> 📘 You can find detailed instructions on how to save the model in the [Upload Model](https://docs.mrxrunway.ai/v0.13.1-Eng/docs/upload-model).
 
 1. Create a sample input data from the training dataset.
 

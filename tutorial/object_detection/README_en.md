@@ -384,9 +384,9 @@ To utilize the written model training code for retraining, we construct and save
 3. Check the inference results.  
    ![predict result](../../assets/object_detection/predict_result.png)
 
-### Model Saving
+### Upload Model
 
-> 📘 You can find detailed instructions on how to save the model in the [Upload Model](https://docs.mrxrunway.ai/v0.13.0-Eng/docs/upload-model).
+> 📘 You can find detailed instructions on how to save the model in the [Upload Model](https://docs.mrxrunway.ai/v0.13.1-Eng/docs/upload-model).
 
 1. Generate the code to save the model using the save model option from the Runway code snippet. Also, log the information that are related to model.
 

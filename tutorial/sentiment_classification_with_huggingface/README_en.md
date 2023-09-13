@@ -162,7 +162,7 @@ We also set up and save a pipeline to reuse the written model training code for 
     trainer.train()
     ```
 
-### Model Saving
+### Upload Model
 
 #### Model Wrapping Class
 
@@ -210,9 +210,9 @@ We also set up and save a pipeline to reuse the written model training code for 
     roc_score = roc_auc_score(label, score)
     ```
 
-#### Model Saving
+#### Upload Model
 
-> 📘 You can find detailed instructions on how to save the model in the [Upload Model](https://docs.mrxrunway.ai/v0.13.0-Eng/docs/upload-model).
+> 📘 You can find detailed instructions on how to save the model in the [Upload Model](https://docs.mrxrunway.ai/v0.13.1-Eng/docs/upload-model).
 
 1. Create a sample input data from the training dataset.
 
