@@ -61,7 +61,15 @@ class PCADetector:
 """
 
 train_code = """
+import runway
+
+# start run
+runway.start_run()
+
+# log param
 parameters = {"n_components": N_COMPONENTS}
+
+runway.log_parameters(parameters)
 
 detector = PCADetector(n_components=parameters["n_components"])
 detector.fit(train)
@@ -69,27 +77,18 @@ detector.fit(train)
 train_pred = detector.predict(train)
 valid_pred = detector.predict(valid)
 
+# log metric
 mean_train_recon_err = train_pred.mean()
 mean_valid_recon_err = valid_pred.mean()
-"""
 
-input_sample_code = """
-input_sample = proc_df.sample(1)
-input_sample
-"""
-
-send_model_to_runway_code = """
-import runway
-
-# start run
-runway.start_run()
-
-# log model related info
-runway.log_parameters(parameters)
 runway.log_metric("mean_train_recon_err", mean_train_recon_err)
 runway.log_metric("mean_valid_recon_err", mean_valid_recon_err)
+"""
 
+
+send_model_to_runway_code = """
 # log model
+input_sample = proc_df.sample(1)
 runway.log_model(model_name="pca-model", model=detector, input_samples={"predict": input_sample})
 
 # stop run
@@ -129,17 +128,12 @@ if __name__ == "__main__":
     pipeline.add_edge(parent_id="split_data", child_id="train")
     pipeline.add_edge(parent_id="pca_class", child_id="train")
 
-    # input sample
-    input_sample = create_link_component(identifier="input_sample", name="input_sample", code=input_sample_code)
-    pipeline.add_component(component=input_sample)
-    pipeline.add_edge(parent_id="train", child_id="input_sample")
-
     # send model to runway
     send_model_to_runway = create_link_component(
         identifier="send_model_to_runway", name="send_model_to_runway", code=send_model_to_runway_code
     )
     pipeline.add_component(component=send_model_to_runway)
-    pipeline.add_edge(parent_id="input_sample", child_id="send_model_to_runway")
+    pipeline.add_edge(parent_id="train", child_id="send_model_to_runway")
 
     # set parameters
     pipeline.set_parameters(new_parameters=[dataset_param, n_component_param])
