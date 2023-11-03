@@ -18,8 +18,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 <h4 align="center">
     <p>
-        <b>한국어</b> |
-        <a href="README_en.md">English</a>
+        <a href="README.md">English</a>
+        <b>English</b>
     <p>
 </h4>
 
