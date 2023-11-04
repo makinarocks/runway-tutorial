@@ -336,7 +336,7 @@ To utilize the written model training code for retraining, we construct and save
     def images_to_bytearray_df(image_filename_list: list):
         df_list = []
         for img_filename in image_filename_list:
-            #image = open(img_filename, "rb")  # open binary file in read mode
+            image = open(img_filename, "rb")  # open binary file in read mode
             image_read = image.read()
             df_list.append(convert_image_to_bytearray(image_read))
         return pd.DataFrame(df_list, columns=["image_data"])
