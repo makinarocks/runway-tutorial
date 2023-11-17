@@ -57,8 +57,7 @@ Runway에 포함된 Link를 사용하여 XGBoost 모델을 학습하고 저장�
 > 📘 데이터 세트 불러오는 방법에 대한 구체적인 가이드는 **[데이터 세트 가져오기](https://docs.mrxrunway.ai/docs/데이터-세트-가져오기)** 가이드 에서 확인할 수 있습니다.
 
 1. Runway 코드 스니펫 메뉴의 **import dataset**을 이용해 프로젝트에 등록되어 있는 데이터셋 목록을 불러옵니다.
-2. 생성한 데이터셋을 선택하고 variable 이름을 적습니다.
-3. 코드를 생성하고 Link 컴포넌트로 등록합니다.
+2. 생성한 데이터셋을 선택해서 코드를 생성합니다.
 
     ```python
     import os
@@ -165,6 +164,19 @@ Runway에 포함된 Link를 사용하여 XGBoost 모델을 학습하고 저장�
     y_pred = regr.predict(X_valid)
     mae = mean_absolute_error(y_pred, y_valid)
     mse = mean_squared_error(y_pred, y_valid)
+    mse
+    ```
+
+4. 학습한 결과를 저장합니다.
+
+    ```python
+    import runway
+
+    runway.start_run()
+    runway.log_parameters(params)
+
+    runway.log_metric("valid_mae", mae)
+    runway.log_metric("valid_mse", mse)
     ```
 
 ### 모델 업로드
@@ -188,35 +200,23 @@ Runway에 포함된 Link를 사용하여 XGBoost 모델을 학습하고 저장�
             )
     ```
 
-2. 학습된 `regr` 을 `RunwayModel` 로 랩핑합니다.
-
-    ```python
-    runway_model = RunwayModel(regr)
-    ```
-
 #### 모델 업로드
 
 > 📘 모델 업로드 방법에 대한 구체적인 가이드는 **[모델 업로드](https://docs.mrxrunway.ai/docs/%EB%AA%A8%EB%8D%B8-%EC%97%85%EB%A1%9C%EB%93%9C)** 문서에서 확인할 수 있습니다.
 
-1. 모델 학습에 사용한 학습 데이터의 샘플을 생성합니다.
-
-    ```python
-    input_sample = X_df.sample(1)
-    input_sample
-    ```
-
-2. Runway code snippet 의 save model을 사용해 모델을 저장하는 코드를 생성합니다. 또한 저장된 모델의 추가적인 정보인 사용된 파라미터, 평가 지표를 저장합니다.
+1. Runway code snippet 의 save model을 사용해 모델을 저장하는 코드를 생성합니다.
+2. 학습된 `regr` 을 `RunwayModel` 로 랩핑합니다.
+3. 생성된 코드에 필요한 input_sample 을 작성합니다.
 
     ```python
     import runway
 
-    runway.start_run()
-    runway.log_parameters(params)
-    runway.log_metric("valid_mae", mae)
-    runway.log_metric("valid_mse", mse)
+    runway_model = RunwayModel(regr)
+    input_sample = X_df.sample(1)
 
     runway.log_model(model_name="my-xgboost-regressor", model=runway_model, input_samples={"predict": input_sample})
 
+    runway.stop_run()
     ```
 
 ## 파이프라인 구성 및 저장

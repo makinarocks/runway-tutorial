@@ -57,8 +57,7 @@ Runway에 포함된 Link를 사용하여 XGBoost 모델을 학습하고 저장�
 > 📘 You can find detailed instructions on how to load the dataset in the [Import Dataset](https://docs.mrxrunway.ai/v0.13.0-Eng/docs/import-dataset).
 
 1. Use the Runway code snippet menu to import the list of datasets registered in your project.
-2. Select the created dataset and assign it to a variable.
-3. Register the code with the Link component.
+2. Select the created dataset and generate code
 
     ```python
     import os
@@ -167,6 +166,18 @@ Runway에 포함된 Link를 사용하여 XGBoost 모델을 학습하고 저장�
     mse = mean_squared_error(y_pred, y_valid)
     ```
 
+4. Save the trained model results.
+
+    ```python
+    import runway
+
+    runway.start_run()
+    runway.log_parameters(params)
+
+    runway.log_metric("valid_mae", mae)
+    runway.log_metric("valid_mse", mse)
+    ```
+
 ### Upload model
 
 #### Model wrapping class
@@ -188,35 +199,24 @@ Runway에 포함된 Link를 사용하여 XGBoost 모델을 학습하고 저장�
             )
     ```
 
-2. Wrap fitted `regr` with `RunwayModel`.
-
-    ```python
-    runway_model = RunwayModel(regr)
-    ```
 
 #### Upload model
 
 > 📘 You can find detailed instructions on how to save the model in the [Upload Model](https://docs.mrxrunway.ai/v0.13.1-Eng/docs/upload-model).
 
-1. Create a sample input data from the training dataset.
-
-    ```python
-    input_sample = X_df.sample(1)
-    input_sample
-    ```
-
-2. Use the "save model" option from the Runway code snippet to save the model. Also, log the information that are related to the model.
+1. Use the "save model" option from the Runway code snippet to save the model.
+2. Wrap fitted `regr` with `RunwayModel`.
+3. Create a sample input data for the generated code.
 
     ```python
     import runway
 
-    runway.start_run()
-    runway.log_parameters(params)
-    runway.log_metric("valid_mae", mae)
-    runway.log_metric("valid_mse", mse)
+    runway_model = RunwayModel(regr)
+    input_sample = X_df.sample(1)
 
     runway.log_model(model_name="my-xgboost-regressor", model=runway_model, input_samples={"predict": input_sample})
 
+    runway.stop_run()
     ```
 
 ## Pipeline Configuration and Saving

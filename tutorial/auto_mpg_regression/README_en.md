@@ -55,8 +55,7 @@ In this tutorial, we will perform tabular regression on the AutoMPG dataset usin
 > 📘 You can find detailed instructions on how to load the dataset in the [Import Dataset](https://docs.mrxrunway.ai/v0.13.0-Eng/docs/import-dataset).
 
 1. Use the Runway code snippet menu to import the list of datasets registered in your project.
-2. Select the created dataset and assign it to a variable.
-3. Register the code with the Link component.
+2. Select the created dataset and generate code
 
     ```python
     import os
@@ -65,7 +64,13 @@ In this tutorial, we will perform tabular regression on the AutoMPG dataset usin
     dfs = []
     for dirname, _, filenames in os.walk(RUNWAY_DATA_PATH):
         for filename in filenames:
-            dfs += [pd.read_csv(os.path.join(dirname, filename))]
+            if filename.endswith(".csv"):
+                d = pd.read_csv(os.path.join(dirname, filename))
+            elif filename.endswith(".parquet"):
+                d = pd.read_parquet(os.path.join(dirname, filename))
+            else:
+                raise ValueError("Not valid file type")
+            dfs += [d]
     df = pd.concat(dfs)
     ```
 
@@ -125,17 +130,16 @@ In this tutorial, we will perform tabular regression on the AutoMPG dataset usin
 
 #### Model Training
 
-1. Use the declared model class and the training dataset to train the model.
+1. Use the declared model class and the training dataset to train the model, and log the information related to train.
 
     ```python
+    import runway
+    from sklearn.metrics import mean_squared_error
+
+    runway.start_run()
+
     runway_regressor = RunwayRegressor()
     runway_regressor.fit(X_train, y_train)
-    ```
-
-2. Evaluate the model's performance.
-
-    ```python
-    from sklearn.metrics import mean_squared_error
 
     #Test model on held out test set
     valid_pred = runway_regressor.predict(X_valid)
@@ -143,6 +147,7 @@ In this tutorial, we will perform tabular regression on the AutoMPG dataset usin
     #Mean Squared error on the testing set
     mse = mean_squared_error(valid_pred, y_valid)
 
+    runway.log_metric("mse", mse)
     #Print evaluate model score
     print('Mean Squared Error: {}'.format(mse))
     ```
@@ -151,21 +156,16 @@ In this tutorial, we will perform tabular regression on the AutoMPG dataset usin
 
 > 📘 You can find detailed instructions on how to save the model in the [Upload Model](https://docs.mrxrunway.ai/v0.13.1-Eng/docs/upload-model).
 
-1. Create a sample input data from the training dataset.
-
-    ```python
-    input_samples = X_train.sample(1)
-    input_samples
-    ```
-
-2. Use the "save model" option from the Runway code snippet to save the model.
+1. Use the "save model" option from the Runway code snippet to save the model.
+2. Create a sample input data for the generated code.
 
     ```python
     import runway
 
-    runway.start_run()
-    runway.log_metric("mse", mse)
-    runway.log_model(model_name='auto-mpg-reg-model-sklearn', model=runway_regressor, input_samples={'predict': input_samples})
+    input_sample = X_train.sample(1)
+
+    runway.log_model(model_name="auto-mpg-reg-model-sklearn", model=runway_regressor, input_samples={"predict": input_sample})
+    runway.stop_run()
     ```
 
 ## Pipeline Configuration and Saving
