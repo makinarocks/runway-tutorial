@@ -55,17 +55,22 @@ Runway에 포함된 Link를 사용하여 테이블 형식 데이터 세트를 �
 > 📘 데이터 세트 불러오는 방법에 대한 구체적인 가이드는 **[데이터 세트 가져오기](https://docs.mrxrunway.ai/docs/데이터-세트-가져오기)** 가이드 에서 확인할 수 있습니다.
 
 1. Runway 코드 스니펫 메뉴의 **import dataset**을 이용해 프로젝트에 등록되어 있는 데이터셋 목록을 불러옵니다.
-2. 생성한 데이터셋을 선택하고 variable 이름을 적습니다.
-3. 코드를 생성하고 Link 컴포넌트로 등록합니다.
+2. 생성한 데이터셋을 선택해서 코드를 생성합니다.
 
     ```python
     import os
     import pandas as pd
 
     dfs = []
-    for dirname, _, filenames in os.walk(RUNWAY_DATA_PATH):
+    for dirname, _, filenames in os.walk(TRAIN_DATA):
         for filename in filenames:
-            dfs += [pd.read_csv(os.path.join(dirname, filename))]
+            if filename.endswith(".csv"):
+                d = pd.read_csv(os.path.join(dirname, filename))
+            elif filename.endswith(".parquet"):
+                d = pd.read_parquet(os.path.join(dirname, filename))
+            else:
+                raise ValueError("Not valid file type")
+            dfs += [d]
     df = pd.concat(dfs)
     ```
 
@@ -137,34 +142,7 @@ Runway에 포함된 Link를 사용하여 테이블 형식 데이터 세트를 �
 
     ![link parameter](../../assets/robotarm_anomaly_detection/link_parameter.png)
 
-2. 선언한 모델 클래스에 Link 파라미터를 입력하고 학습용 데이터셋을 활용하여, 모델 학습을 수행하고 모델을 평가합니다.
-
-    ```python
-
-    parameters = {"n_components": N_COMPONENTS}
-
-    detector = PCADetector(n_components=parameters["n_components"])
-    detector.fit(train)
-
-    train_pred = detector.predict(train)
-    valid_pred = detector.predict(valid)
-
-    mean_train_recon_err = train_pred.mean()
-    mean_valid_recon_err = valid_pred.mean()
-    ```
-
-### 모델 업로드
-
-> 📘 모델 업로드 방법에 대한 구체적인 가이드는 **[모델 업로드](https://docs.mrxrunway.ai/docs/%EB%AA%A8%EB%8D%B8-%EC%97%85%EB%A1%9C%EB%93%9C)** 문서에서 확인할 수 있습니다.
-
-1. 모델 학습에 사용한 학습 데이터의 샘플을 생성합니다.
-
-    ```python
-    input_sample = proc_df.sample(1)
-    input_sample
-    ```
-
-2. Runway code snippet 의 save model을 사용해 모델을 저장하는 코드를 생성합니다. 그리고 모델 과 관련된 정보를 저장합니다.
+2. 선언한 모델 클래스에 Link 파라미터를 입력하고 학습용 데이터셋을 활용하여 모델을 학습하고 관련된 정보를 로깅합니다.
 
     ```python
     import runway
@@ -172,13 +150,41 @@ Runway에 포함된 Link를 사용하여 테이블 형식 데이터 세트를 �
     # start run
     runway.start_run()
 
-    # log model related info
+    # log param
+    parameters = {"n_components": N_COMPONENTS}
+
     runway.log_parameters(parameters)
+
+    detector = PCADetector(n_components=parameters["n_components"])
+    detector.fit(train)
+
+    train_pred = detector.predict(train)
+    valid_pred = detector.predict(valid)
+
+    # log metric
+    mean_train_recon_err = train_pred.mean()
+    mean_valid_recon_err = valid_pred.mean()
+
     runway.log_metric("mean_train_recon_err", mean_train_recon_err)
     runway.log_metric("mean_valid_recon_err", mean_valid_recon_err)
+    ```
+
+### 모델 업로드
+
+> 📘 모델 업로드 방법에 대한 구체적인 가이드는 **[모델 업로드](https://docs.mrxrunway.ai/docs/%EB%AA%A8%EB%8D%B8-%EC%97%85%EB%A1%9C%EB%93%9C)** 문서에서 확인할 수 있습니다.
+
+1. Runway code snippet 의 save model을 사용해 모델을 저장하는 코드를 생성합니다.
+2. 생성된 코드에 필요한 input_sample 을 작성합니다.
+
+    ```python
+    import runway
 
     # log model
+    input_sample = proc_df.sample(1)
     runway.log_model(model_name="pca-model", model=detector, input_samples={"predict": input_sample})
+
+    # stop run
+    runway.stop_run()
     ```
 
 ## 파이프라인 구성 및 저장

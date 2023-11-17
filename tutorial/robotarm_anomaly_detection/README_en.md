@@ -55,8 +55,7 @@ We use the Link included in Runway to load a table-formatted dataset and train a
 > 📘 You can find detailed instructions on how to load the dataset in the [Import Dataset](https://docs.mrxrunway.ai/v0.13.0-Eng/docs/import-dataset).
 
 1. Use the Runway code snippet menu to import the list of datasets registered in your project.
-2. Select the created dataset and assign it to a variable.
-3. Register the code with the Link component.
+2. Select the created dataset and generate code
 
     ```python
     import os
@@ -65,7 +64,13 @@ We use the Link included in Runway to load a table-formatted dataset and train a
     dfs = []
     for dirname, _, filenames in os.walk(RUNWAY_DATA_PATH):
         for filename in filenames:
-            dfs += [pd.read_csv(os.path.join(dirname, filename))]
+            if filename.endswith(".csv"):
+                d = pd.read_csv(os.path.join(dirname, filename))
+            elif filename.endswith(".parquet"):
+                d = pd.read_parquet(os.path.join(dirname, filename))
+            else:
+                raise ValueError("Not valid file type")
+            dfs += [d]
     df = pd.concat(dfs)
     ```
 
@@ -137,11 +142,18 @@ We use the Link included in Runway to load a table-formatted dataset and train a
 
     ![link parameter](../../assets/robotarm_anomaly_detection/link_parameter.png)
 
-2. Use the Link parameter into the declared model class, and perform model training using the training dataset and evaluate model.
+2. Use the declared model class and the training dataset to train the model, and log the information related to train.
 
     ```python
+    import runway
 
+    # start run
+    runway.start_run()
+
+    # log param
     parameters = {"n_components": N_COMPONENTS}
+
+    runway.log_parameters(parameters)
 
     detector = PCADetector(n_components=parameters["n_components"])
     detector.fit(train)
@@ -149,9 +161,14 @@ We use the Link included in Runway to load a table-formatted dataset and train a
     train_pred = detector.predict(train)
     valid_pred = detector.predict(valid)
 
+    # log metric
     mean_train_recon_err = train_pred.mean()
     mean_valid_recon_err = valid_pred.mean()
+
+    runway.log_metric("mean_train_recon_err", mean_train_recon_err)
+    runway.log_metric("mean_valid_recon_err", mean_valid_recon_err)
     ```
+
 
 ### Upload Model
 

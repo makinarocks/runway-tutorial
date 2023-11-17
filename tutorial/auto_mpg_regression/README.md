@@ -56,8 +56,7 @@ Runway에 포함된 Link를 사용하여 테이블 형식 데이터 세트를 �
 > 📘 데이터 세트 불러오는 방법에 대한 구체적인 가이드는 **[데이터 세트 가져오기](https://docs.mrxrunway.ai/docs/데이터-세트-가져오기)** 가이드 에서 확인할 수 있습니다.
 
 1. Runway 코드 스니펫 메뉴의 **import dataset**을 이용해 프로젝트에 등록되어 있는 데이터셋 목록을 불러옵니다.
-2. 생성한 데이터셋을 선택하고 variable 이름을 적습니다.
-3. 코드를 생성하고 Link 컴포넌트로 등록합니다.
+2. 생성한 데이터셋을 선택해서 코드를 생성합니다.
 
     ```python
     import os
@@ -66,7 +65,13 @@ Runway에 포함된 Link를 사용하여 테이블 형식 데이터 세트를 �
     dfs = []
     for dirname, _, filenames in os.walk(RUNWAY_DATA_PATH):
         for filename in filenames:
-            dfs += [pd.read_csv(os.path.join(dirname, filename))]
+            if filename.endswith(".csv"):
+                d = pd.read_csv(os.path.join(dirname, filename))
+            elif filename.endswith(".parquet"):
+                d = pd.read_parquet(os.path.join(dirname, filename))
+            else:
+                raise ValueError("Not valid file type")
+            dfs += [d]
     df = pd.concat(dfs)
     ```
 
@@ -126,25 +131,25 @@ Runway에 포함된 Link를 사용하여 테이블 형식 데이터 세트를 �
 
 #### 모델 학습
 
-1. 선언한 모델 클래스와 학습용 데이터셋을 활용하여, 모델 학습을 수행합니다.
+1. 선언한 모델 클래스와 학습용 데이터셋을 활용하여, 모델의 학습과 관련 정보를 로깅합니다.
 
     ```python
-    runway_regressor = RunwayRegressor()
-    runway_regressor.fit(X_train, y_train)
-    ```
-
-2. 학습한 모델의 성능을 확인합니다.
-
-    ```python
+    import runway
     from sklearn.metrics import mean_squared_error
 
-    ## Test model on held out test set
+    runway.start_run()
+
+    runway_regressor = RunwayRegressor()
+    runway_regressor.fit(X_train, y_train)
+
+    #Test model on held out test set
     valid_pred = runway_regressor.predict(X_valid)
 
-    ## Mean Squared error on the testing set
+    #Mean Squared error on the testing set
     mse = mean_squared_error(valid_pred, y_valid)
 
-    ## Print evaluate model score
+    runway.log_metric("mse", mse)
+    #Print evaluate model score
     print('Mean Squared Error: {}'.format(mse))
     ```
 
@@ -152,21 +157,16 @@ Runway에 포함된 Link를 사용하여 테이블 형식 데이터 세트를 �
 
 > 📘 모델 업로드 방법에 대한 구체적인 가이드는 **[모델 업로드](https://docs.mrxrunway.ai/docs/%EB%AA%A8%EB%8D%B8-%EC%97%85%EB%A1%9C%EB%93%9C)** 문서에서 확인할 수 있습니다.
 
-1. 모델 학습에 사용한 학습 데이터의 샘플을 생성합니다.
-
-    ```python
-    input_samples = X_train.sample(1)
-    input_samples
-    ```
-
-2. Runway code snippet 의 save model을 사용해 모델을 저장하는 코드를 생성합니다.
+1. Runway code snippet 의 save model을 사용해 모델을 저장하는 코드를 생성합니다.
+2. 생성된 코드에 필요한 input_sample 을 작성합니다.
 
     ```python
     import runway
 
-    runway.start_run()
-    runway.log_metric("mse", mse)
-    runway.log_model(model_name='auto-mpg-reg-model-sklearn', model=runway_regressor, input_samples={'predict': input_samples})
+    input_sample = X_train.sample(1)
+
+    runway.log_model(model_name="auto-mpg-reg-model-sklearn", model=runway_regressor, input_samples={"predict": input_sample})
+    runway.stop_run()
     ```
 
 ## 파이프라인 구성 및 저장
