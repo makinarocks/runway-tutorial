@@ -57,8 +57,7 @@ To utilize the written model training code for retraining, we construct and save
 > 📘 You can find detailed instructions on how to load the dataset in the [Import Dataset](https://docs.mrxrunway.ai/v0.13.0-Eng/docs/import-dataset).
 
 1. Use the Runway code snippet menu to import the list of datasets registered in your project.
-2. Select the created dataset and assign it to a variable.
-3. Register the code with the Link component.
+2. Select the created dataset and generate code
 
     ```python
     import os
