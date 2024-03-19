@@ -25,20 +25,28 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
 
 ## Runway
 
-### 데이터셋 생성
-
 > 📘 이 튜토리얼은 COCO 데이터 셋의 일부를 사용해 객체 탐지를 수행하는 모델을 생성합니다.
 >
 > COCO 샘플 데이터셋은 아래 항목을 클릭하여 다운로드 할 수 있습니다.  
 > **[coco-sample-dataset.zip](https://drive.google.com/uc?export=download&id=1TrM3y8aRRmaYnIlDI902p73Lsw0XC89B)**
 
+### 데이터 세트 생성하기
+
+> 📘 데이터셋 생성에 관한 자세한 내용은 [공식 문서](https://docs.live.mrxrunway.ai/Guide/ml_development/datasets/dataset-runway/)를 참고하세요.
+
 1. Runway 프로젝트 메뉴에서 데이터셋 페이지로 이동합니다.
-2. 데이터셋 페이지에서 신규 데이터셋을 생성합니다.
-3. 데이터셋 페이지의 우측 상단 `Create Dataset`을 클릭합니다.
-4. 저장하는 데이터셋의 이름과 설명을 입력합니다.
-5. 다운로드 받은 파일의 압축을 해제합니다.
-6. 데이터셋으로 생성할 파일들(jpg, json)을 파일 탐색기로 선택하거나, Drag&Drop으로 입력합니다.
-7. `Create`를 클릭합니다.
+2. 데이터 세트 메뉴에서 데이터 세트 생성 메뉴에 진입합니다. 
+    - 좌측 데이터 세트 목록 상단 `+` 버튼을 클릭합니다.
+    - 초기 화면에서 `Create` 버튼을 클릭합니다.
+3. 다이얼로그에서 생성할 데이터 세트의 이름을 입력 후 `Create` 버튼을 클릭합니다.
+
+### 데이터 세트 버전 생성하기
+
+1. `Versions 섹션`에서  `Create version` 버튼을 클릭합니다. 
+2. 다이얼로그에서 `Local file`을 선택합니다.
+3. 저장하는 데이터셋의 이름과 설명을 입력합니다.
+4. 데이터셋으로 생성할 파일을 파일 탐색기로 선택하거나, Drag&Drop으로 입력합니다.
+5. `Create`를 클릭합니다.
 
 ## Link
 
@@ -53,11 +61,13 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
 
 #### 데이터 불러오기
 
-> 📘 데이터 세트 불러오는 방법에 대한 구체적인 가이드는 **[데이터 세트 가져오기](https://docs.mrxrunway.ai/docs/데이터-세트-가져오기)** 가이드 에서 확인할 수 있습니다.
+> 📘 데이터 세트 불러오는 방법에 대한 구체적인 가이드는 **[데이터 세트 가져오기](https://docs.live.mrxrunway.ai/Guide/ml_development/dev_instances/%EB%8D%B0%EC%9D%B4%ED%84%B0_%EC%84%B8%ED%8A%B8_%EA%B0%80%EC%A0%B8%EC%98%A4%EA%B8%B0/)** 가이드 에서 확인할 수 있습니다.
 
-1. Runway 코드 스니펫 메뉴의 **import dataset**을 이용해 프로젝트에 등록되어 있는 데이터셋 목록을 불러옵니다.
-2. 생성한 데이터셋을 선택해서 코드를 생성합니다.
-
+1. 노트북 셀 상단의 **Add Runway Snippet** 버튼을 클릭합니다.
+2. **Import Dataset** 를 선택합니다. 
+3. 사용할 데이터 세트의 버전을 선택하고 **Save** 버튼을 클릭합니다.
+4. 버튼 클릭 시 노트북 셀 내 선택한 데이터 세트 내 파일 목록을 조회할 수 있는 스니펫이 작성되며, 해당 데이터 세트 경로를 값으로 갖는 데이터 세트 파라미터가 추가됩니다.  
+5. 데이터 세트를 불러오고자 하는 노트북 셀에서 등록된 데이터 세트 파라미터의 이름을 입력하여 작업에 활용합니다.
     ```python
     import os
     from pycocotools.coco import COCO
@@ -190,22 +200,25 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
 ### 모델 선언
 
 1. 학습에 사용할 모델을 선언합니다. 튜토리얼에서는 pytorch 의 `fasterrcnn_resnet50_fpn` 모델을 사용합니다.
-
     ```python
     import torch
     from torchvision.models.detection import fasterrcnn_resnet50_fpn
 
-    ## Define local variables
+
+    # Define local variables
     print(torch.cuda.is_available())
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
-    ## Define training model
-    model = fasterrcnn_resnet50_fpn(weights="DEFAULT").to(device)
+    try:
+        entrypoints = torch.hub.list('pytorch/vision', force_reload=True)
+        model = fasterrcnn_resnet50_fpn(weights="DEFAULT").to(device)
+    except:
+        model = fasterrcnn_resnet50_fpn(weights=None, weights_backbone=None).to(device)
     ```
 
 ### 모델 학습
 
-> 📘 Link 파라미터 등록 가이드는 **[파이프라인 파라미터 설정](https://dash.readme.com/project/makinarocks-runway/docs/파이프라인-파라미터-설정)** 문서에서 확인할 수 있습니다.
+> 📘 Link 파라미터 등록 가이드는 **[파이프라인 파라미터 설정](https://docs.live.mrxrunway.ai/Guide/ml_development/dev_instances/%ED%8C%8C%EC%9D%B4%ED%94%84%EB%9D%BC%EC%9D%B8_%ED%8C%8C%EB%9D%BC%EB%AF%B8%ED%84%B0_%EC%84%A4%EC%A0%95/)** 문서에서 확인할 수 있습니다.할 수 있습니다.
 
 1. 모델을 학습할 Epoch 을 설정할 수 있도록 Link 파라미터로 N_EPOCHS 에 1을 등록합니다.
 2. 선언한 모델을 위에서 만든 데이터 로더를 통해 학습하고 모델의 성능을 평가합니다.
@@ -251,7 +264,6 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
 #### 모델 랩핑 클래스 선언
 
 1. 학습된 모델을 서빙할 수 있도록 ModelWrapper를 작성합니다.
-
     ```python
     import io
     import base64
@@ -260,7 +272,7 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
     import pandas as pd
     import numpy as np
     from torchvision import transforms
-    from PIL import Image
+    from PIL import Image, ImageDraw, ImageFont
 
 
     class ModelWrapper:
@@ -269,48 +281,105 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
             self.device = device
 
         def bytesarray_to_tensor(self, bytes_array: str):
-            ## input : "utf-8" decoded bytes_array
+            # input : "utf-8" decoded bytes_array
             encoded_bytes_array = bytes_array.encode("utf-8")
-            ## decode encoded_bytes_array with ascii code
+            # decode encoded_bytes_array with ascii code
             img_64_decode = base64.b64decode(encoded_bytes_array)
-            ## get image file and transform to tensor
+            # get image file and transform to tensor
             image_from_bytes = Image.open(io.BytesIO(img_64_decode))
             return transforms.ToTensor()(image_from_bytes).to(self.device)
 
-        def tensor_to_bytesarray(self, tensor: torch.Tensor):
-            tensor_bytes_array = tensor.detach().cpu().numpy().tobytes()
-            tensor_64_encode = base64.b64encode(tensor_bytes_array)
-            bytes_array = tensor_64_encode.decode("utf-8")
+        def numpy_to_bytesarray(self, numpy_array):
+            numpy_array_bytes_array = numpy_array.tobytes()
+            numpy_array_64_encode = base64.b64encode(numpy_array_bytes_array)
+            bytes_array = numpy_array_64_encode.decode("utf-8")
             return bytes_array
+
+        def draw_detection(self, img_tensor, bboxes, labels, scores, out_img_file):
+            """Draw detection result."""
+            img_array = img_tensor.permute(1, 2, 0).numpy() * 255
+            img = Image.fromarray(img_array.astype(np.uint8))
+            
+            draw = ImageDraw.Draw(img)    
+            font = ImageFont.load_default()
+            bboxes = bboxes.cpu().numpy().astype(np.int32)
+            labels = labels.cpu().numpy()
+            scores = scores.cpu().numpy()
+            for box, label, score in zip(bboxes, labels, scores):        
+                draw.rectangle([(box[0], box[1]), (box[2], box[3])], outline="red", width=1)  
+                text = f"{label}: {score:.2f}"
+                draw.text((box[0], box[1]), text, fill="red", font=font)
+            img.save(out_img_file)
+            return img
 
         @torch.no_grad()
         def predict(self, df):
             self.model.eval()
-            ## df is 1-d dataframe with bytes array
+            # df is 1-d dataframe with bytes array
             tensor_list = list((map(self.bytesarray_to_tensor, df.squeeze(axis=1).to_list())))
-            pred = self.model(tensor_list)
-            result = pd.DataFrame(pred).applymap(lambda x: self.tensor_to_bytesarray(x))
-            torch.cuda.empty_cache()
-            return result
 
-        def revert_predict_to_array(self, pred):
-            pred_decode = pred.applymap(base64.b64decode)
-            for key in pred_decode.keys():
-                if key == "labels":
-                    pred_decode[key] = pred_decode[key].apply(lambda x: np.frombuffer(x, dtype=int))
-                elif key == "boxes":
-                    pred_decode[key] = pred_decode[key].apply(lambda x: np.frombuffer(x, dtype=np.float32).reshape(-1, 4))
-                else:
-                    pred_decode[key] = pred_decode[key].apply(lambda x: np.frombuffer(x, dtype=np.float32))
-            return pred_decode
-    ```
+            pred_images = []
+            pred_image_shape_c = []
+            pred_image_shape_h = []
+            pred_image_shape_w = []
+            pred_image_dtypes = []
 
-2. 학습이 완료된 모델을 ModelWrapper 로 모델을 랩핑합니다.
+            boxes = []
+            labels = []
+            scores = []
 
-    ```python
-    model = model.cpu()
-    device = "cpu"
-    serve_model = ModelWrapper(model=model, device=device)
+            boxes_dtypes = []
+            labels_dtypes = []
+            scores_dtypes = []
+
+            for img in tensor_list:
+                output = self.model(img.unsqueeze(0))
+                detect_img = self.draw_detection(
+                    img_tensor=img,
+                    bboxes=output[0]["boxes"],
+                    labels=output[0]["labels"],
+                    scores=output[0]["scores"],
+                    out_img_file="test.png",
+                )
+                detect_img = np.array(detect_img)
+                h, w, c = detect_img.shape
+                box = output[0]["boxes"].cpu().numpy()
+                label = output[0]["labels"].cpu().numpy()
+                score = output[0]["scores"].cpu().numpy()
+
+                pred_images += [detect_img]
+                boxes += [box]
+                labels += [label]
+                scores += [score]
+
+                pred_image_shape_c += [c]
+                pred_image_shape_h += [h]
+                pred_image_shape_w += [w]
+
+                pred_image_dtypes += [str(detect_img.dtype)]
+                boxes_dtypes += [str(box.dtype)]
+                labels_dtypes += [str(label.dtype)]
+                scores_dtypes += [str(score.dtype)]
+
+                torch.cuda.empty_cache()
+
+            meta = pd.DataFrame({
+                "pred_image_shape_c": pred_image_shape_c,
+                "pred_image_shape_h": pred_image_shape_h,
+                "pred_image_shape_w": pred_image_shape_w,
+                "output_dtype": pred_image_dtypes,
+                "boxes_dtypes": boxes_dtypes,
+                "labels_dtypes": labels_dtypes,
+                "scores_dtypes": scores_dtypes,
+            })
+            img_byte = pd.DataFrame({
+                "output": pred_images,
+                "boxes": boxes,
+                "labels": labels,
+                "scores": scores,
+                # "true": tensor_list,
+            }).applymap(lambda x: self.numpy_to_bytesarray(x))
+            return pd.concat([meta, img_byte], axis="columns")
     ```
 
 #### 샘플 이미지 추론
@@ -337,43 +406,30 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
         return pd.DataFrame(df_list, columns=["image_data"])
     ```
 
-2. 위에서 사용한 데이터와 변환 코드를 이용해 `input_sample` 을 생성하고 랩핑된 모델을 이용해 추론합니다.
+2. 위에서 사용한 데이터와 변환 코드를 이용해 `input_sample` 을 생성하고 모델을 랩핑한 객체를 이용해 추론합니다.
 
     ```python
-    from PIL import ImageDraw
-    import seaborn as sns
+    model = model.cpu()
+    device = "cpu"
+    serve_model = ModelWrapper(model=model, device=device)
 
-    ## make input sample
+    # make input sample
     input_sample = images_to_bytearray_df(image_filename_list)
 
-    ## For inference
+    # For inference
     pred = serve_model.predict(input_sample)
-    predictions = serve_model.revert_predict_to_array(pred)
 
-    ## Load Categories
-    cats = dataset.coco.loadCats(dataset.coco.getCatIds())
-    cats_palette = sns.color_palette("Set2", len(cats)).as_hex()
-    for idx in range(len(cats)):
-        cats[idx]["color"] = cats_palette[idx]
+    output = pred.loc[0]
+    data, dtype = output["output"], output["output_dtype"]
+    c, h, w = output["pred_image_shape_c"], output["pred_image_shape_h"], output["pred_image_shape_w"]
 
-    ## Draw inference results
-    img = Image.open(sample_image_path)
-    for idx in range(len(predictions["boxes"][0])):
-        label = predictions["labels"][0][idx]
-        score = predictions["scores"][0][idx]
-        box = predictions["boxes"][0][idx]
-        ## cat = cats[label]
-        cat = dataset.coco.loadCats(label.item())[0]
+    type_dict = {"uint8": np.uint8, "float32": np.float32, "int64": np.int64}
+    pred_decode = base64.b64decode(data)
+    pred_array = np.frombuffer(pred_decode, dtype=type_dict[dtype])
 
-        if score < 0.9:
-            continue
-
-        draw = ImageDraw.Draw(img)
-        draw.rectangle(box, outline=cat["color"], width = 3)
-        draw.text(box, cat["name"], cat["color"])
+    img = Image.fromarray(pred_array.reshape(h, w, c))
 
     imshow(img)
-    del draw
     ```
 
 3. 추론 결과를 확인합니다.
@@ -384,7 +440,6 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
 > 📘 모델 업로드 방법에 대한 구체적인 가이드는 **[모델 업로드](https://docs.mrxrunway.ai/docs/모델-저장)** 문서에서 확인할 수 있습니다.
 
 1. Runway code snippet 의 save model을 사용해 모델을 저장하는 코드를 생성합니다. 그리고 모델 과 관련된 정보를 저장합니다.
-
     ```python
     import runway
 
@@ -399,20 +454,18 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
 
 > 📘 파이프라인 생성 방법에 대한 구체적인 가이드는 **[파이프라인 생성](https://dash.readme.com/project/makinarocks-runway/docs/파이프라인-생성)** 문서에서 확인할 수 있습니다.
 
-1. 파이프라인으로 구성할 코드 셀을 선택하여 컴포넌트로 설정합니다.
-2. 파이프라인으로 구성이 완료되면, 전체 파이프라인을 실행하여 정상 동작 여부를 확인합니다.
-3. 파이프라인의 정상 동작 확인 후, 파이프라인을 Runway에 저장합니다.
-    1. 좌측 패널 영역의 Upload Pipeline을 클릭합니다.
-    2. Pipeline 저장 옵션을 선택합니다.
-        1. 신규 저장의 경우, New Pipeline을 선택합니다.
-        2. 기존 파이프라인의 업데이트일 경우, Version Update를 선택합니다.
-    3. 파이프라인 저장을 위한 값을 입력 후, Save를 클릭합니다.
-4. Runway 프로젝트 메뉴에서 Pipeline 페이지로 이동합니다.
-5. 저장한 파이프라인의 이름을 클릭하면 파이프라인 상세 페이지로 진입합니다.
+1. **Link**에서 파이프라인을 작성하고 정상 실행 여부를 확인합니다.
+2. 정상 실행 확인 후, Link pipeline 패널의 **Upload pipeline** 버튼을 클릭합니다.
+3. **New Pipeline** 버튼을 클릭합니다.
+4. **Pipeline** 필드에 Runway에 저장할 이름을 작성합니다.
+5. **Pipeline version** 필드에는 자동으로 버전 1이 선택됩니다.
+6. **Upload** 버튼을 클릭합니다.
+7. 업로드가 완료되면 프로젝트 내 Pipeline 페이지에 업로드한 파이프라인 항목이 표시됩니다.
+
 
 ## 모델 배포
 
-> 📘 모델 배포 방법에 대한 구체적인 가이드는 **[모델 배포](https://docs.mrxrunway.ai/docs/%EB%AA%A8%EB%8D%B8-%EB%B0%B0%ED%8F%AC-%EB%B0%8F-%EC%98%88%EC%B8%A1-%EC%9A%94%EC%B2%AD)** 문서에서 확인할 수 있습니다.
+> 📘 모델 배포 방법에 대한 구체적인 가이드는 **[모델 배포](https://docs.live.mrxrunway.ai/Guide/ml_serving/model_deployments/%EB%AA%A8%EB%8D%B8_%EB%B0%B0%ED%8F%AC/)** 문서에서 확인할 수 있습니다.
 
 ## 데모 사이트
 
