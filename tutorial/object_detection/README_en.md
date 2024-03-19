@@ -25,21 +25,28 @@ To utilize the written model training code for retraining, we construct and save
 
 ## Runway
 
-### Dataset Creation
-
 > 📘 Currently, Runway only supports COCO-format config.
 >
 > You can download the available config for the received data source by clicking on the items below.
 > **[coco-sample-dataset.zip](https://drive.google.com/uc?export=download&id=1TrM3y8aRRmaYnIlDI902p73Lsw0XC89B)**
 
-1. Go to the Runway project menu and navigate to the dataset page.
-2. Create a new dataset on the dataset page.
-3. Click on the `Create Dataset` button in the top right corner.
-4. Select `Local File`.
-5. Provide a name and description for the dataset you are creating.
-6. Extract the zip file.
-7. Choose the files(jpg, json) to include in the dataset using the file explorer or drag-and-drop.
-8. Click on `Create`.
+### Create a dataset
+
+> 📘 For detailed information on dataset creation, please refer to the [official documentation](https://docs.live.mrxrunway.ai/en/Guide/ml_development/datasets/dataset-runway/).
+
+1. Navigate to the dataset page from the Runway project menu.
+2. Access the dataset creation menu in the dataset menu.
+    - Click the `+` button at the top of the left dataset list.
+    - Click the `Create` button on the initial screen.
+3. In the dialog, enter the name of the dataset to create and click the `Create` button.
+
+### Creating Dataset Version
+
+1.  Click the `Create version` button in the `Versions` section.
+2.  Select `Local file` in the dialog.
+3.  Enter the name and description of the dataset to be saved.
+4.  Select the file to be created as a dataset using the file explorer or Drag&Drop.
+5.  Click `Create`.
 
 ## Link
 
@@ -54,11 +61,13 @@ To utilize the written model training code for retraining, we construct and save
 
 #### Load Data
 
-> 📘 You can find detailed instructions on how to load the dataset in the [Import Dataset](https://docs.mrxrunway.ai/v0.13.0-Eng/docs/import-dataset).
+> 📘 You can find detailed instructions on how to load the dataset in the [Import Dataset](https://docs.live.mrxrunway.ai/en/Guide/ml_development/dev_instances/%EB%8D%B0%EC%9D%B4%ED%84%B0_%EC%84%B8%ED%8A%B8_%EA%B0%80%EC%A0%B8%EC%98%A4%EA%B8%B0/).
 
-1. Use the Runway code snippet menu to import the list of datasets registered in your project.
-2. Select the created dataset and generate code
-
+1. Click the **Add Runway Snippet** button at the top of the notebook cell.
+2. Select **Import Dataset**.
+3. Choose the version of the dataset you want to use and click **Save**.
+4. Upon clicking the button, a snippet will be generated in the notebook cell allowing you to browse the files within the selected dataset. Additionally, a dataset parameter with the dataset path as its value will be added.
+5. Utilize the name of the registered dataset parameter in the notebook cell where you want to load the dataset.
     ```python
     import os
     from pycocotools.coco import COCO
@@ -191,22 +200,25 @@ To utilize the written model training code for retraining, we construct and save
 ### Model Declaration
 
 1. Declare the model to be used for training. In this tutorial, we use the `fasterrcnn_resnet50_fpn` model from PyTorch.
-
     ```python
     import torch
     from torchvision.models.detection import fasterrcnn_resnet50_fpn
 
-    ## Define local variables
+
+    # Define local variables
     print(torch.cuda.is_available())
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
-    ## Define training model
-    model = fasterrcnn_resnet50_fpn(weights="DEFAULT").to(device)
+    try:
+        entrypoints = torch.hub.list('pytorch/vision', force_reload=True)
+        model = fasterrcnn_resnet50_fpn(weights="DEFAULT").to(device)
+    except:
+        model = fasterrcnn_resnet50_fpn(weights=None, weights_backbone=None).to(device)
     ```
 
 ### Model Training
 
-> 📘 You can find guidance on registering Link parameters in the **[Set Pipeline Parameter](https://docs.mrxrunway.ai/v0.13.0-Eng/docs/set-pipeline-parameter)**.
+> 📘 You can find guidance on registering Link parameters in the **[Set Pipeline Parameter](https://docs.live.mrxrunway.ai/en/Guide/ml_development/dev_instances/%ED%8C%8C%EC%9D%B4%ED%94%84%EB%9D%BC%EC%9D%B8_%ED%8C%8C%EB%9D%BC%EB%AF%B8%ED%84%B0_%EC%84%A4%EC%A0%95/)**.
 
 1. Set the number of epochs for model training by registering 1 in the `N_EPOCHS` Link parameter.
 2. Train the declared model using the data loader created above and evaluate the trained model.
@@ -264,7 +276,7 @@ To utilize the written model training code for retraining, we construct and save
     import pandas as pd
     import numpy as np
     from torchvision import transforms
-    from PIL import Image
+    from PIL import Image, ImageDraw, ImageFont
 
 
     class ModelWrapper:
@@ -273,42 +285,106 @@ To utilize the written model training code for retraining, we construct and save
             self.device = device
 
         def bytesarray_to_tensor(self, bytes_array: str):
-            ## input : "utf-8" decoded bytes_array
+            # input : "utf-8" decoded bytes_array
             encoded_bytes_array = bytes_array.encode("utf-8")
-            ## decode encoded_bytes_array with ascii code
+            # decode encoded_bytes_array with ascii code
             img_64_decode = base64.b64decode(encoded_bytes_array)
-            ## get image file and transform to tensor
+            # get image file and transform to tensor
             image_from_bytes = Image.open(io.BytesIO(img_64_decode))
             return transforms.ToTensor()(image_from_bytes).to(self.device)
 
-        def tensor_to_bytesarray(self, tensor: torch.Tensor):
-            tensor_bytes_array = tensor.detach().cpu().numpy().tobytes()
-            tensor_64_encode = base64.b64encode(tensor_bytes_array)
-            bytes_array = tensor_64_encode.decode("utf-8")
+        def numpy_to_bytesarray(self, numpy_array):
+            numpy_array_bytes_array = numpy_array.tobytes()
+            numpy_array_64_encode = base64.b64encode(numpy_array_bytes_array)
+            bytes_array = numpy_array_64_encode.decode("utf-8")
             return bytes_array
+
+        def draw_detection(self, img_tensor, bboxes, labels, scores, out_img_file):
+            """Draw detection result."""
+            img_array = img_tensor.permute(1, 2, 0).numpy() * 255
+            img = Image.fromarray(img_array.astype(np.uint8))
+            
+            draw = ImageDraw.Draw(img)    
+            font = ImageFont.load_default()
+            bboxes = bboxes.cpu().numpy().astype(np.int32)
+            labels = labels.cpu().numpy()
+            scores = scores.cpu().numpy()
+            for box, label, score in zip(bboxes, labels, scores):        
+                draw.rectangle([(box[0], box[1]), (box[2], box[3])], outline="red", width=1)  
+                text = f"{label}: {score:.2f}"
+                draw.text((box[0], box[1]), text, fill="red", font=font)
+            img.save(out_img_file)
+            return img
 
         @torch.no_grad()
         def predict(self, df):
             self.model.eval()
-            ## df is 1-d dataframe with bytes array
+            # df is 1-d dataframe with bytes array
             tensor_list = list((map(self.bytesarray_to_tensor, df.squeeze(axis=1).to_list())))
-            pred = self.model(tensor_list)
-            result = pd.DataFrame(pred).applymap(lambda x: self.tensor_to_bytesarray(x))
-            torch.cuda.empty_cache()
-            return result
 
-        def revert_predict_to_array(self, pred):
-            pred_decode = pred.applymap(base64.b64decode)
-            for key in pred_decode.keys():
-                if key == "labels":
-                    pred_decode[key] = pred_decode[key].apply(lambda x: np.frombuffer(x, dtype=int))
-                elif key == "boxes":
-                    pred_decode[key] = pred_decode[key].apply(lambda x: np.frombuffer(x, dtype=np.float32).reshape(-1, 4))
-                else:
-                    pred_decode[key] = pred_decode[key].apply(lambda x: np.frombuffer(x, dtype=np.float32))
-            return pred_decode
+            pred_images = []
+            pred_image_shape_c = []
+            pred_image_shape_h = []
+            pred_image_shape_w = []
+            pred_image_dtypes = []
+
+            boxes = []
+            labels = []
+            scores = []
+
+            boxes_dtypes = []
+            labels_dtypes = []
+            scores_dtypes = []
+
+            for img in tensor_list:
+                output = self.model(img.unsqueeze(0))
+                detect_img = self.draw_detection(
+                    img_tensor=img,
+                    bboxes=output[0]["boxes"],
+                    labels=output[0]["labels"],
+                    scores=output[0]["scores"],
+                    out_img_file="test.png",
+                )
+                detect_img = np.array(detect_img)
+                h, w, c = detect_img.shape
+                box = output[0]["boxes"].cpu().numpy()
+                label = output[0]["labels"].cpu().numpy()
+                score = output[0]["scores"].cpu().numpy()
+
+                pred_images += [detect_img]
+                boxes += [box]
+                labels += [label]
+                scores += [score]
+
+                pred_image_shape_c += [c]
+                pred_image_shape_h += [h]
+                pred_image_shape_w += [w]
+
+                pred_image_dtypes += [str(detect_img.dtype)]
+                boxes_dtypes += [str(box.dtype)]
+                labels_dtypes += [str(label.dtype)]
+                scores_dtypes += [str(score.dtype)]
+
+                torch.cuda.empty_cache()
+
+            meta = pd.DataFrame({
+                "pred_image_shape_c": pred_image_shape_c,
+                "pred_image_shape_h": pred_image_shape_h,
+                "pred_image_shape_w": pred_image_shape_w,
+                "output_dtype": pred_image_dtypes,
+                "boxes_dtypes": boxes_dtypes,
+                "labels_dtypes": labels_dtypes,
+                "scores_dtypes": scores_dtypes,
+            })
+            img_byte = pd.DataFrame({
+                "output": pred_images,
+                "boxes": boxes,
+                "labels": labels,
+                "scores": scores,
+                # "true": tensor_list,
+            }).applymap(lambda x: self.numpy_to_bytesarray(x))
+            return pd.concat([meta, img_byte], axis="columns")
     ```
-
 2. Wrap the trained model with ModelWrapper.
 
     ```python
@@ -341,43 +417,29 @@ To utilize the written model training code for retraining, we construct and save
         return pd.DataFrame(df_list, columns=["image_data"])
     ```
 
-2. Create an `input_sample` using the data and conversion code above, and perform inference using the wrapped model.
-
+2. Create an `input_sample` using the data and conversion code above, and  perform inference using the wrapped model.
     ```python
-    from PIL import ImageDraw
-    import seaborn as sns
+    model = model.cpu()
+    device = "cpu"
+    serve_model = ModelWrapper(model=model, device=device)
 
-    ## make input sample
+    # make input sample
     input_sample = images_to_bytearray_df(image_filename_list)
 
-    ## For inference
+    # For inference
     pred = serve_model.predict(input_sample)
-    predictions = serve_model.revert_predict_to_array(pred)
 
-    ## Load Categories
-    cats = dataset.coco.loadCats(dataset.coco.getCatIds())
-    cats_palette = sns.color_palette("Set2", len(cats)).as_hex()
-    for idx in range(len(cats)):
-        cats[idx]["color"] = cats_palette[idx]
+    output = pred.loc[0]
+    data, dtype = output["output"], output["output_dtype"]
+    c, h, w = output["pred_image_shape_c"], output["pred_image_shape_h"], output["pred_image_shape_w"]
 
-    ## Draw inference results
-    img = Image.open(sample_image_path)
-    for idx in range(len(predictions["boxes"][0])):
-        label = predictions["labels"][0][idx]
-        score = predictions["scores"][0][idx]
-        box = predictions["boxes"][0][idx]
-        ## cat = cats[label]
-        cat = dataset.coco.loadCats(label.item())[0]
+    type_dict = {"uint8": np.uint8, "float32": np.float32, "int64": np.int64}
+    pred_decode = base64.b64decode(data)
+    pred_array = np.frombuffer(pred_decode, dtype=type_dict[dtype])
 
-        if score < 0.9:
-            continue
-
-        draw = ImageDraw.Draw(img)
-        draw.rectangle(box, outline=cat["color"], width = 3)
-        draw.text(box, cat["name"], cat["color"])
+    img = Image.fromarray(pred_array.reshape(h, w, c))
 
     imshow(img)
-    del draw
     ```
 
 3. Check the inference results.  
@@ -385,8 +447,7 @@ To utilize the written model training code for retraining, we construct and save
 
 ### Upload Model
 
-> 📘 You can find detailed instructions on how to save the model in the [Upload Model](https://docs.mrxrunway.ai/v0.13.1-Eng/docs/upload-model).
-
+> 📘 You can find detailed instructions on how to save the model in the [Upload Model](https://docs.live.mrxrunway.ai/en/Guide/ml_development/dev_instances/%EB%AA%A8%EB%8D%B8_%EC%97%85%EB%A1%9C%EB%93%9C/).
 1. Generate the code to save the model using the save model option from the Runway code snippet. Also, log the information that are related to model.
 
     ```python
@@ -401,23 +462,20 @@ To utilize the written model training code for retraining, we construct and save
 
 ## Pipeline Configuration and Saving
 
-> 📘 For specific guidance on creating a pipeline, refer to the [Create Pipeline](https://docs.mrxrunway.ai/v0.13.0-Eng/docs/create-pipeline).
+> 📘 For specific guidance on creating a pipeline, refer to the [Upload Pipeline](https://docs.live.mrxrunway.ai/en/Guide/ml_development/dev_instances/%ED%8C%8C%EC%9D%B4%ED%94%84%EB%9D%BC%EC%9D%B8_%EC%97%85%EB%A1%9C%EB%93%9C/).
 
-1. Select the code cells to be included in the pipeline and configure them as components.
-2. Once the pipeline is complete, run the entire pipeline to verify that it works correctly.
-3. After confirming the pipeline's successful operation, save the pipeline in Runway.
-    1. Click on "Upload Pipeline" in the left panel area.
-    2. Choose the pipeline saving option:
-        1. For new pipeline, select "New Pipeline."
-        2. For updating an existing pipeline, select "Update Version"
-    3. Provide the necessary information to save the pipeline.
-4. Go back to Runway project page, and click Pipeline.
-5. You can now access the saved pipeline in the Runway project menu under the Pipeline page.
+1.  Write and verify the pipeline in **Link** to ensure it runs smoothly.
+2.  After verifying successful execution, click the **Upload pipeline** button in the Link pipeline panel.
+3.  Click the **New Pipeline** button.
+4.  Enter the name for the pipeline to be saved in Runway in the **Pipeline** field.
+5.  The **Pipeline version** field will automatically select version 1.
+6.  Click the **Upload** button.
+7.  Once the upload is complete, the uploaded pipeline item will appear on the Pipeline page within the project.
+
 
 ## Model Deployment
 
-> 📘 You can find specific guidance on model deployment in the **[Model Deployment](https://docs.mrxrunway.ai/v0.13.0-Eng/docs/model-deployments)**.
-
+> 📘 You can find specific guidance on model deployment in the **[Model Deployment](https://docs.live.mrxrunway.ai/en/Guide/ml_serving/model_deployments/%EB%AA%A8%EB%8D%B8_%EB%B0%B0%ED%8F%AC/)**.
 ## Demo Service
 
 1. To test the deployed model, you can use the following [demo website](http://demo.service.mrxrunway.ai/object).

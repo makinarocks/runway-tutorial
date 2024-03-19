@@ -25,20 +25,28 @@ We also set up and save a pipeline to reuse the written model training code for 
 
 ## Runway
 
-### 데이터셋 생성
-
 > 📘 This tutorial uses the IMDB dataset provided by Stanford University, which has been reprocessed and uploaded as part of the [huggingface dataset](https://huggingface.co/datasets/imdb/tree/refs%2Fconvert%2Fparquet/plain_text). With this dataset, you can perform sentiment analysis.
 >
 > You can download the imdb dataset by clicking the link below.
 > **[IMDB test dataset](https://drive.google.com/uc?export=download&id=1QlIzPfOw_b0xXnXM6rxnW3Vbr-VDm0At)**
 
-1. Go to the Runway project menu and navigate to the dataset page.
-2. Create a new dataset on the dataset page.
-3. Click on the `Create Dataset` button in the top right corner.
-4. Select `Local File` on `Tabular Data` area.
-5. Provide a name and description for the dataset you are creating.
-6. Choose the file to include in the dataset using the file explorer or drag-and-drop.
-7. Click on `Create`.
+### Create a dataset
+
+> 📘 For detailed information on dataset creation, please refer to the [official documentation](https://docs.live.mrxrunway.ai/en/Guide/ml_development/datasets/dataset-runway/).
+
+1. Navigate to the dataset page from the Runway project menu.
+2. Access the dataset creation menu in the dataset menu.
+    - Click the `+` button at the top of the left dataset list.
+    - Click the `Create` button on the initial screen.
+3. In the dialog, enter the name of the dataset to create and click the `Create` button.
+
+### Creating Dataset Version
+
+1.  Click the `Create version` button in the `Versions` section.
+2.  Select `Local file` in the dialog.
+3.  Enter the name and description of the dataset to be saved.
+4.  Select the file to be created as a dataset using the file explorer or Drag&Drop.
+5.  Click `Create`.
 
 ## Link
 
@@ -54,12 +62,13 @@ We also set up and save a pipeline to reuse the written model training code for 
 
 #### Load Data
 
-> 📘 You can find detailed instructions on how to load the dataset in the [Import Dataset](https://docs.mrxrunway.ai/v0.13.0-Eng/docs/import-dataset).
+> 📘 You can find detailed instructions on how to load the dataset in the [Import Dataset](https://docs.live.mrxrunway.ai/en/Guide/ml_development/dev_instances/%EB%8D%B0%EC%9D%B4%ED%84%B0_%EC%84%B8%ED%8A%B8_%EA%B0%80%EC%A0%B8%EC%98%A4%EA%B8%B0/).
 
-1. Use the Runway code snippet menu to import the list of datasets registered in your project.
-2. Select the created dataset and assign it to a variable.
-3. Register the code with the Link component.
-
+1. Click the **Add Runway Snippet** button at the top of the notebook cell.
+2. Select **Import Dataset**.
+3. Choose the version of the dataset you want to use and click **Save**.
+4. Upon clicking the button, a snippet will be generated in the notebook cell allowing you to browse the files within the selected dataset. Additionally, a dataset parameter with the dataset path as its value will be added.
+5. Utilize the name of the registered dataset parameter in the notebook cell where you want to load the dataset.
     ```python
     import os
     import pandas as pd
@@ -77,7 +86,7 @@ We also set up and save a pipeline to reuse the written model training code for 
     df = pd.concat(dfs)
     ```
 
-4. Create Huggingface Dataset with Pandas dataframe.
+6. Create Huggingface Dataset with Pandas dataframe.
 
     ```python
     from datasets import Dataset
@@ -88,7 +97,7 @@ We also set up and save a pipeline to reuse the written model training code for 
 
 #### Data Preprocessing
 
-> 📘 You can find guidance on registering Link parameters in the **[Set Pipeline Parameter](https://docs.mrxrunway.ai/v0.13.0-Eng/docs/set-pipeline-parameter)**.
+> 📘 You can find guidance on registering Link parameters in the **[Set Pipeline Parameter](https://docs.live.mrxrunway.ai/en/Guide/ml_development/dev_instances/%ED%8C%8C%EC%9D%B4%ED%94%84%EB%9D%BC%EC%9D%B8_%ED%8C%8C%EB%9D%BC%EB%AF%B8%ED%84%B0_%EC%84%A4%EC%A0%95/)**.
 
 1. To choose the architecture for the tokenizer, register `"distilbert-base-uncased"` in the `MODEL_ARCH_NAME` Link parameter.
 
@@ -212,8 +221,7 @@ We also set up and save a pipeline to reuse the written model training code for 
 
 #### Upload Model
 
-> 📘 You can find detailed instructions on how to save the model in the [Upload Model](https://docs.mrxrunway.ai/v0.13.1-Eng/docs/upload-model).
-
+> 📘 You can find detailed instructions on how to save the model in the [Upload Model](https://docs.live.mrxrunway.ai/en/Guide/ml_development/dev_instances/%EB%AA%A8%EB%8D%B8_%EC%97%85%EB%A1%9C%EB%93%9C/).
 1. Create a sample input data from the training dataset.
 
     ```python
@@ -221,7 +229,7 @@ We also set up and save a pipeline to reuse the written model training code for 
     input_samples
     ```
 
-2. Use the "save model" option from the Runway code snippet to save the model. Also, log the information that are related to the model.
+2. Use the `save model` option from the Runway code snippet to save the model. Also, log the information that are related to the model.
 
     ```python
     import runway
@@ -238,22 +246,20 @@ We also set up and save a pipeline to reuse the written model training code for 
 
 ## Pipeline Configuration and Saving
 
-> 📘 For specific guidance on creating a pipeline, refer to the [Create Pipeline](https://docs.mrxrunway.ai/v0.13.0-Eng/docs/create-pipeline).
+> 📘 For specific guidance on creating a pipeline, refer to the [Upload Pipeline](https://docs.live.mrxrunway.ai/en/Guide/ml_development/dev_instances/%ED%8C%8C%EC%9D%B4%ED%94%84%EB%9D%BC%EC%9D%B8_%EC%97%85%EB%A1%9C%EB%93%9C/).
 
-1. Select the code cells to be included in the pipeline and configure them as components.
-2. Once the pipeline is complete, run the entire pipeline to verify that it works correctly.
-3. After confirming the pipeline's successful operation, save the pipeline in Runway.
-    1. Click on "Upload Pipeline" in the left panel area.
-    2. Choose the pipeline saving option:
-        1. For new pipeline, select "New Pipeline."
-        2. For updating an existing pipeline, select "Update Version"
-    3. Provide the necessary information to save the pipeline.
-4. Go back to Runway project page, and click Pipeline.
-5. You can now access the saved pipeline in the Runway project menu under the Pipeline page.
+1.  Write and verify the pipeline in **Link** to ensure it runs smoothly.
+2.  After verifying successful execution, click the **Upload pipeline** button in the Link pipeline panel.
+3.  Click the **New Pipeline** button.
+4.  Enter the name for the pipeline to be saved in Runway in the **Pipeline** field.
+5.  The **Pipeline version** field will automatically select version 1.
+6.  Click the **Upload** button.
+7.  Once the upload is complete, the uploaded pipeline item will appear on the Pipeline page within the project.
+
 
 ## Model Deployment
 
-> 📘 You can find specific guidance on model deployment in the **[Model Deployment](https://docs.mrxrunway.ai/v0.13.0-Eng/docs/model-deployments)**.
+> 📘 You can find specific guidance on model deployment in the **[Model Deployment](https://docs.live.mrxrunway.ai/en/Guide/ml_serving/model_deployments/%EB%AA%A8%EB%8D%B8_%EB%B0%B0%ED%8F%AC/)**.
 
 ## Demo Site
 
