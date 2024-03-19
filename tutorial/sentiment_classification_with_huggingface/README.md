@@ -246,16 +246,14 @@ Runway에 포함된 Link를 사용하여 Huggingface 모델을 학습하고 저�
 
 > 📘 파이프라인 생성 방법에 대한 구체적인 가이드는 **[파이프라인 업로드](https://docs.live.mrxrunway.ai/Guide/ml_development/dev_instances/%ED%8C%8C%EC%9D%B4%ED%94%84%EB%9D%BC%EC%9D%B8_%EC%97%85%EB%A1%9C%EB%93%9C/)** 문서에서 확인할 수 있습니다.
 
-1. 파이프라인으로 구성할 코드 셀을 선택하여 컴포넌트로 설정합니다.
-2. 파이프라인으로 구성이 완료되면, 전체 파이프라인을 실행하여 정상 동작 여부를 확인합니다.
-3. 파이프라인의 정상 동작 확인 후, 파이프라인을 Runway에 저장합니다.
-    1. 좌측 패널 영역의 Upload Pipeline을 클릭합니다.
-    2. Pipeline 저장 옵션을 선택합니다.
-        1. 신규 저장의 경우, New Pipeline을 선택합니다.
-        2. 기존 파이프라인의 업데이트일 경우, Version Update를 선택합니다.
-    3. 파이프라인 저장을 위한 값을 입력 후, Save를 클릭합니다.
-4. Runway 프로젝트 메뉴에서 Pipeline 페이지로 이동합니다.
-5. 저장한 파이프라인의 이름을 클릭하면 파이프라인 상세 페이지로 진입합니다.
+1. **Link**에서 파이프라인을 작성하고 정상 실행 여부를 확인합니다.
+2. 정상 실행 확인 후, Link pipeline 패널의 **Upload pipeline** 버튼을 클릭합니다.
+3. **New Pipeline** 버튼을 클릭합니다.
+4. **Pipeline** 필드에 Runway에 저장할 이름을 작성합니다.
+5. **Pipeline version** 필드에는 자동으로 버전 1이 선택됩니다.
+6. **Upload** 버튼을 클릭합니다.
+7. 업로드가 완료되면 프로젝트 내 Pipeline 페이지에 업로드한 파이프라인 항목이 표시됩니다.
+
 
 ## 모델 배포
 
