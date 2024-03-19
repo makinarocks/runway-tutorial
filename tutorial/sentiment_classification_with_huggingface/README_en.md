@@ -229,7 +229,7 @@ We also set up and save a pipeline to reuse the written model training code for 
     input_samples
     ```
 
-2. Use the "save model" option from the Runway code snippet to save the model. Also, log the information that are related to the model.
+2. Use the `save model` option from the Runway code snippet to save the model. Also, log the information that are related to the model.
 
     ```python
     import runway

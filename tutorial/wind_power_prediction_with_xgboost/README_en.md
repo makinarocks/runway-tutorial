@@ -199,7 +199,7 @@ Construct and save a pipeline for reusing the written model training code for re
 
 > 📘 You can find detailed instructions on how to save the model in the [Upload Model](https://docs.live.mrxrunway.ai/en/Guide/ml_development/dev_instances/%EB%AA%A8%EB%8D%B8_%EC%97%85%EB%A1%9C%EB%93%9C/).
 
-1. Use the "save model" option from the Runway code snippet to save the model.
+1. Use the `save model` option from the Runway code snippet to save the model.
 2. Wrap fitted `regr` with `RunwayModel`.
 3. Create a sample input data for the generated code.
 4. Log metric and parameters for uploading model.

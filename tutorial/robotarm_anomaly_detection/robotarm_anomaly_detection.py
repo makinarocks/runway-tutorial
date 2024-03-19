@@ -19,7 +19,7 @@ proc_df = df.set_index("datetime").drop(columns=["id"]).tail(1000)
 split_data_code = """
 from sklearn.model_selection import train_test_split
 
-train, valid = train_test_split(proc_df, test_size=0.2)
+train, valid = train_test_split(proc_df, test_size=0.2, random_state=2024)
 """
 
 pca_class_code = """
@@ -61,32 +61,32 @@ class PCADetector:
 """
 
 train_code = """
-import runway
-
-# start run
-runway.start_run()
-
-# log param
 parameters = {"n_components": N_COMPONENTS}
-
-runway.log_parameters(parameters)
-
 detector = PCADetector(n_components=parameters["n_components"])
 detector.fit(train)
 
 train_pred = detector.predict(train)
 valid_pred = detector.predict(valid)
 
-# log metric
 mean_train_recon_err = train_pred.mean()
 mean_valid_recon_err = valid_pred.mean()
-
-runway.log_metric("mean_train_recon_err", mean_train_recon_err)
-runway.log_metric("mean_valid_recon_err", mean_valid_recon_err)
 """
 
 
 send_model_to_runway_code = """
+import runway
+
+
+# start run
+runway.start_run()
+
+# log param
+runway.log_parameters(parameters)
+
+# log metric
+runway.log_metric("mean_train_recon_err", mean_train_recon_err)
+runway.log_metric("mean_valid_recon_err", mean_valid_recon_err)
+
 # log model
 input_sample = proc_df.sample(1)
 runway.log_model(model_name="pca-model", model=detector, input_samples={"predict": input_sample})
