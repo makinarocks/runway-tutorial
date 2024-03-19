@@ -24,20 +24,28 @@ In this tutorial, we will perform tabular regression on the AutoMPG dataset usin
 
 ## Runway
 
-### Create dataset
-
 > We will use the AutoMPG dataset, which contains information about cars released in the late 1970s and early 1980s, including attributes such as the number of cylinders, displacement, horsepower, weight, and origin.
 >
 > You can download the AutoMPG dataset using the following link:  
 > **[auto-mpg.csv](https://runway-tutorial.s3.ap-northeast-2.amazonaws.com/auto-mpg.csv)**
 
-1. Go to the Runway project menu and navigate to the dataset page.
-2. Create a new dataset on the dataset page.
-3. Click on the `Create Dataset` button in the top right corner.
-4. Select `Local File`.
-5. Provide a name and description for the dataset you are creating.
-6. Choose the file to include in the dataset using the file explorer or drag-and-drop.
-7. Click on `Create`.
+### Create a dataset
+
+> 📘 For detailed information on dataset creation, please refer to the [official documentation](https://docs.live.mrxrunway.ai/en/Guide/ml_development/datasets/dataset-runway/).
+
+1. Navigate to the dataset page from the Runway project menu.
+2. Access the dataset creation menu in the dataset menu.
+    - Click the `+` button at the top of the left dataset list.
+    - Click the `Create` button on the initial screen.
+3. In the dialog, enter the name of the dataset to create and click the `Create` button.
+
+### Creating Dataset Version
+
+1.  Click the `Create version` button in the `Versions` section.
+2.  Select `Local file` in the dialog.
+3.  Enter the name and description of the dataset to be saved.
+4.  Select the file to be created as a dataset using the file explorer or Drag&Drop.
+5.  Click `Create`.
 
 ## Link
 
@@ -52,11 +60,13 @@ In this tutorial, we will perform tabular regression on the AutoMPG dataset usin
 
 #### Load Data
 
-> 📘 You can find detailed instructions on how to load the dataset in the [Import Dataset](https://docs.mrxrunway.ai/v0.13.0-Eng/docs/import-dataset).
+> 📘 You can find detailed instructions on how to load the dataset in the [Import Dataset](https://docs.live.mrxrunway.ai/en/Guide/ml_development/dev_instances/%EB%8D%B0%EC%9D%B4%ED%84%B0_%EC%84%B8%ED%8A%B8_%EA%B0%80%EC%A0%B8%EC%98%A4%EA%B8%B0/).
 
-1. Use the Runway code snippet menu to import the list of datasets registered in your project.
-2. Select the created dataset and generate code
-
+1. Click the **Add Runway Snippet** button at the top of the notebook cell.
+2. Select **Import Dataset**.
+3. Choose the version of the dataset you want to use and click **Save**.
+4. Upon clicking the button, a snippet will be generated in the notebook cell allowing you to browse the files within the selected dataset. Additionally, a dataset parameter with the dataset path as its value will be added.
+5. Utilize the name of the registered dataset parameter in the notebook cell where you want to load the dataset.
     ```python
     import os
     import pandas as pd
@@ -77,16 +87,15 @@ In this tutorial, we will perform tabular regression on the AutoMPG dataset usin
 #### Data Preprocessing
 
 1. Remove any missing values in the dataset and separate the predictor and target columns.
-
     ```python
-    ## Drop NA data in dataset
-    data_clean= df.dropna()
+    # Drop NA data in dataset
+    data_clean = df.dropna()
 
-    ## Select Predictor columns
-    X = df[['cylinders', 'displacement', 'weight', 'acceleration', "origin"]]
+    # Select Predictor columns
+    X = df[["cylinders", "displacement", "weight", "acceleration", "origin"]]
 
-    ## Select target column
-    y = df['mpg']
+    # Select target column
+    y = df["mpg"]
     ```
 
 2. Split the dataset into training and testing sets.
@@ -95,7 +104,7 @@ In this tutorial, we will perform tabular regression on the AutoMPG dataset usin
     from sklearn.model_selection import train_test_split
 
     #Split data into training and testing sets
-    X_train, X_valid, y_train, y_valid = train_test_split(X, y, test_size=0.2)
+    X_train, X_valid, y_train, y_valid = train_test_split(X, y, test_size=0.2, random_state=2024)
     ```
 
 #### Model
@@ -131,12 +140,9 @@ In this tutorial, we will perform tabular regression on the AutoMPG dataset usin
 #### Model Training
 
 1. Use the declared model class and the training dataset to train the model, and log the information related to train.
-
     ```python
-    import runway
     from sklearn.metrics import mean_squared_error
 
-    runway.start_run()
 
     runway_regressor = RunwayRegressor()
     runway_regressor.fit(X_train, y_train)
@@ -147,20 +153,20 @@ In this tutorial, we will perform tabular regression on the AutoMPG dataset usin
     #Mean Squared error on the testing set
     mse = mean_squared_error(valid_pred, y_valid)
 
-    runway.log_metric("mse", mse)
     #Print evaluate model score
-    print('Mean Squared Error: {}'.format(mse))
+    print("Mean Squared Error: {}".format(mse))
     ```
 
 ### Upload Model
 
-> 📘 You can find detailed instructions on how to save the model in the [Upload Model](https://docs.mrxrunway.ai/v0.13.1-Eng/docs/upload-model).
-
-1. Use the "save model" option from the Runway code snippet to save the model.
+> 📘 You can find detailed instructions on how to save the model in the [Upload Model](https://docs.live.mrxrunway.ai/en/Guide/ml_development/dev_instances/%EB%AA%A8%EB%8D%B8_%EC%97%85%EB%A1%9C%EB%93%9C/).
+1. Use the `save model` option from the Runway code snippet to save the model.
 2. Create a sample input data for the generated code.
-
     ```python
     import runway
+
+    runway.start_run()
+    runway.log_metric("mse", mse)
 
     input_sample = X_train.sample(1)
 
@@ -170,15 +176,13 @@ In this tutorial, we will perform tabular regression on the AutoMPG dataset usin
 
 ## Pipeline Configuration and Saving
 
-> 📘 For specific guidance on creating a pipeline, refer to the [Create Pipeline](https://docs.mrxrunway.ai/v0.13.0-Eng/docs/create-pipeline).
+> 📘 For specific guidance on creating a pipeline, refer to the [Upload Pipeline](https://docs.live.mrxrunway.ai/en/Guide/ml_development/dev_instances/%ED%8C%8C%EC%9D%B4%ED%94%84%EB%9D%BC%EC%9D%B8_%EC%97%85%EB%A1%9C%EB%93%9C/).
 
-1. Select the code cells to be included in the pipeline and configure them as components.
-2. Once the pipeline is complete, run the entire pipeline to verify that it works correctly.
-3. After confirming the pipeline's successful operation, save the pipeline in Runway.
-    1. Click on "Upload Pipeline" in the left panel area.
-    2. Choose the pipeline saving option:
-        1. For new pipeline, select "New Pipeline."
-        2. For updating an existing pipeline, select "Update Version"
-    3. Provide the necessary information to save the pipeline.
-4. Go back to Runway project page, and click Pipeline.
-5. You can now access the saved pipeline in the Runway project menu under the Pipeline page.
+1.  Write and verify the pipeline in **Link** to ensure it runs smoothly.
+2.  After verifying successful execution, click the **Upload pipeline** button in the Link pipeline panel.
+3.  Click the **New Pipeline** button.
+4.  Enter the name for the pipeline to be saved in Runway in the **Pipeline** field.
+5.  The **Pipeline version** field will automatically select version 1.
+6.  Click the **Upload** button.
+7.  Once the upload is complete, the uploaded pipeline item will appear on the Pipeline page within the project.
+
