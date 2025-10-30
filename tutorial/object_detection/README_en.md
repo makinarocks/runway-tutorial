@@ -23,32 +23,6 @@ To utilize the written model training code for retraining, we construct and save
 
 ![link notebook](../../assets/object_detection/link_pipeline.png)
 
-## Runway
-
-> 📘 Currently, Runway only supports COCO-format config.
->
-> You can download the available config for the received data source by clicking on the items below.
-> **[coco-sample-dataset.zip](https://drive.google.com/uc?export=download&id=1TrM3y8aRRmaYnIlDI902p73Lsw0XC89B)**
-
-### Create a dataset
-
-> 📘 For detailed information on dataset creation, please refer to the [official documentation](https://docs.live.mrxrunway.ai/en/Guide/ml_development/datasets/dataset-runway/).
-
-1. Navigate to the dataset page from the Runway project menu.
-2. Access the dataset creation menu in the dataset menu.
-    - Click the `+` button at the top of the left dataset list.
-    - Click the `Create` button on the initial screen.
-3. In the dialog, enter the name of the dataset to create and click the `Create` button.
-
-### Creating Dataset Version
-
-1.  Click the `Create version` button in the `Versions` section.
-2.  Select `Local file` in the dialog.
-3.  Enter the name and description of the dataset to be saved.
-4.  Select the file to be created as a dataset using the file explorer or Drag&Drop.
-5.  Click `Create`.
-
-## Link
 
 ### Package Preparation
 
@@ -58,23 +32,21 @@ To utilize the written model training code for retraining, we construct and save
     ```
 
 ### Data
+This tutorial uses a subset of the publicly available COCO dataset.
+
+> 📘 The COCO sample dataset used in this tutorial is located in the `./dataset` directory, and can also be downloaded from the link below if needed.
+> **[coco-sample-dataset.zip](https://drive.google.com/uc?export=download&id=1TrM3y8aRRmaYnIlDI902p73Lsw0XC89B)**
 
 #### Load Data
 
-> 📘 You can find detailed instructions on how to load the dataset in the [Import Dataset](https://docs.live.mrxrunway.ai/en/Guide/ml_development/dev_instances/%EB%8D%B0%EC%9D%B4%ED%84%B0_%EC%84%B8%ED%8A%B8_%EA%B0%80%EC%A0%B8%EC%98%A4%EA%B8%B0/).
-
-1. Click the **Add Runway Snippet** button at the top of the notebook cell.
-2. Select **Import Dataset**.
-3. Choose the version of the dataset you want to use and click **Save**.
-4. Upon clicking the button, a snippet will be generated in the notebook cell allowing you to browse the files within the selected dataset. Additionally, a dataset parameter with the dataset path as its value will be added.
-5. Utilize the name of the registered dataset parameter in the notebook cell where you want to load the dataset.
+1. Check the path of the dataset file in the file explorer.
+2. Assign the dataset file path to the RUNWAY_DATA_PATH parameter.
+   
     ```python
     import os
     from pycocotools.coco import COCO
 
-    # RUNWAY_DATA_PATH was added to pipeline parameters.
-    # Pipeline parameters can be used in the cell added as a pipeline component.
-    # RUNWAY_DATA_PATH = "/home/jovyan/workspace/dataset/sample-coco"
+    RUNWAY_DATA_PATH = "/home/jovyan/workspace/examples/tutorial/object_detection/dataset"
     config_file = None
     for dirname, _, filenames in os.walk(RUNWAY_DATA_PATH):
         for filename in filenames:
@@ -93,11 +65,12 @@ To utilize the written model training code for retraining, we construct and save
 
     ```python
     from pathlib import Path
+
     from matplotlib.pyplot import imshow
     from PIL import Image
 
 
-    sample_image_path = Path(RUNWAY_DATA_PATH).parent / "000000000139.jpg"
+    sample_image_path = next(Path(RUNWAY_DATA_PATH).glob("*.jpg"))
     image_filename_list = [sample_image_path]
 
     img = Image.open(sample_image_path)
@@ -106,9 +79,8 @@ To utilize the written model training code for retraining, we construct and save
 
     ![sample image](../../assets/object_detection/sample_image.png)
 
-### Training
 
-#### COCO Dataset
+### COCO Dataset
 
 1. To train the model, create a Dataset provided by PyTorch.
 
@@ -196,6 +168,7 @@ To utilize the written model training code for retraining, we construct and save
         collate_fn=collate_fn
     )
     ```
+## Model
 
 ### Model Declaration
 
@@ -218,7 +191,7 @@ To utilize the written model training code for retraining, we construct and save
 
 ### Model Training
 
-> 📘 You can find guidance on registering Link parameters in the **[Set Pipeline Parameter](https://docs.live.mrxrunway.ai/en/Guide/ml_development/dev_instances/%ED%8C%8C%EC%9D%B4%ED%94%84%EB%9D%BC%EC%9D%B8_%ED%8C%8C%EB%9D%BC%EB%AF%B8%ED%84%B0_%EC%84%A4%EC%A0%95/)**.
+> 📘 You can find guidance on registering Link parameters in the **[Set Pipeline Parameter](https://docs.live.mrxrunway.ai/en/guide/core-features/dev-instances/set-pipeline-parameters/)**.
 
 1. Set the number of epochs for model training by registering 1 in the `N_EPOCHS` Link parameter.
 2. Train the declared model using the data loader created above and evaluate the trained model.
@@ -385,13 +358,7 @@ To utilize the written model training code for retraining, we construct and save
             }).applymap(lambda x: self.numpy_to_bytesarray(x))
             return pd.concat([meta, img_byte], axis="columns")
     ```
-2. Wrap the trained model with ModelWrapper.
-
-    ```python
-    model = model.cpu()
-    device = "cpu"
-    serve_model = ModelWrapper(model=model, device=device)
-    ```
+    
 
 #### Sample Image Inference
 
@@ -445,24 +412,29 @@ To utilize the written model training code for retraining, we construct and save
 3. Check the inference results.  
    ![predict result](../../assets/object_detection/predict_result.png)
 
-### Upload Model
+### Model Registration
 
-> 📘 You can find detailed instructions on how to save the model in the [Upload Model](https://docs.live.mrxrunway.ai/en/Guide/ml_development/dev_instances/%EB%AA%A8%EB%8D%B8_%EC%97%85%EB%A1%9C%EB%93%9C/).
-1. Generate the code to save the model using the save model option from the Runway code snippet. Also, log the information that are related to model.
+Register the trained regression model in Runway so that it can be used for inference services.
+
+1. Use the model registration code snippet in the Runway platform to register (`log_model`) the trained model and record related information.
 
     ```python
+    import mlflow
     import runway
 
     del map_score["classes"]
-    runway.start_run()
-    runway.log_metrics(map_score)
+    with mlflow.start_run():
+        mlflow.log_metrics(map_score)
 
-    runway.log_model(model_name="my-detection-model", model=serve_model, input_samples={'predict': input_sample})
-    ```
+        runway.log_model(
+            model=serve_model,
+            input_samples={"predict": input_sample},
+            model_name="my-detection-model",
+    )
 
 ## Pipeline Configuration and Saving
 
-> 📘 For specific guidance on creating a pipeline, refer to the [Upload Pipeline](https://docs.live.mrxrunway.ai/en/Guide/ml_development/dev_instances/%ED%8C%8C%EC%9D%B4%ED%94%84%EB%9D%BC%EC%9D%B8_%EC%97%85%EB%A1%9C%EB%93%9C/).
+> 📘 For specific guidance on creating a pipeline, refer to the [Create a pipeline](https://docs.live.mrxrunway.ai/en/guide/core-features/dev-instances/create-a-pipeline/).
 
 1.  Write and verify the pipeline in **Link** to ensure it runs smoothly.
 2.  After verifying successful execution, click the **Upload pipeline** button in the Link pipeline panel.
@@ -475,7 +447,7 @@ To utilize the written model training code for retraining, we construct and save
 
 ## Model Deployment
 
-> 📘 You can find specific guidance on model deployment in the **[Model Deployment](https://docs.live.mrxrunway.ai/en/Guide/ml_serving/model_deployments/%EB%AA%A8%EB%8D%B8_%EB%B0%B0%ED%8F%AC/)**.
+> 📘 You can find specific guidance on model deployment in the **[Model Deployment](https://docs.live.mrxrunway.ai/en/guide/core-features/inference-services/deploying-models/)**.
 ## Demo Service
 
 1. To test the deployed model, you can use the following [demo website](http://demo.service.mrxrunway.ai/object).

@@ -13,8 +13,8 @@
 
 ## Introduction
 
-rain and save an XGBoost model using the links included in the Runway.  
-Construct and save a pipeline for reusing the written model training code for retraining
+This tutorial trains and saves an XGBoost model to predict wind power generation using sensor log data collected from wind turbines. ([Wind Power Forecasting](https://www.kaggle.com/datasets/theforcecoder/wind-power-forecasting), provided by Kaggle)  
+To enable retraining with the developed model training code, a pipeline is configured and saved.
 
 > 📘 For quick execution, you can utilize the following Jupyter Notebook.  
 > If you download and execute the Jupyter Notebook below, a model named ""my-xgboost-regressor" will be created and saved in Runway.
@@ -23,34 +23,6 @@ Construct and save a pipeline for reusing the written model training code for re
 
 ![link pipeline](../../assets/wind_power_prediction_with_xgboost/link_pipeline.png)
 
-## Runway
-
-> 📘 This tutorial use dataset [Wind Power Forecasting](https://www.kaggle.com/datasets/theforcecoder/wind-power-forecasting) from Kaggle. Using this dataset we can predict generate power prediction.
->
-> Wind power forecasting dataset can download from below link.
-> **[Wind power forecasting dataset](https://drive.google.com/uc?export=download&id=16iE44jF7J6rCa01EGcUP1wuMrKJUdN7J)**
-
-
-### Create a dataset
-
-> 📘 For detailed information on dataset creation, please refer to the [official documentation](https://docs.live.mrxrunway.ai/en/Guide/ml_development/datasets/dataset-runway/).
-
-1. Navigate to the dataset page from the Runway project menu.
-2. Access the dataset creation menu in the dataset menu.
-    - Click the `+` button at the top of the left dataset list.
-    - Click the `Create` button on the initial screen.
-3. In the dialog, enter the name of the dataset to create and click the `Create` button.
-
-### Creating Dataset Version
-
-1.  Click the `Create version` button in the `Versions` section.
-2.  Select `Local file` in the dialog.
-3.  Enter the name and description of the dataset to be saved.
-4.  Select the file to be created as a dataset using the file explorer or Drag&Drop.
-5.  Click `Create`.
-
-## Link
-
 ### Install package
 
 1. Install the required packages for the tutorial.
@@ -58,21 +30,23 @@ Construct and save a pipeline for reusing the written model training code for re
     !pip install xgboost
     ```
 
-### Data
+## Data
+Load the CSV file included in the **Runway tutorial folder** to create and preprocess the dataset.
 
-#### Load data
+> 📘 This tutorial uses the data included in [Wind Power Forecasting](https://www.kaggle.com/datasets/theforcecoder/wind-power-forecasting), provided by Kaggle.  
+> The dataset for wind power generation is located in the `./dataset` directory, and can be downloaded from the link below if needed. 
+> **[Wind power forecasting dataset](https://drive.google.com/uc?export=download&id=16iE44jF7J6rCa01EGcUP1wuMrKJUdN7J)**
 
-> 📘 You can find detailed instructions on how to load the dataset in the [Import Dataset](https://docs.live.mrxrunway.ai/en/Guide/ml_development/dev_instances/%EB%8D%B0%EC%9D%B4%ED%84%B0_%EC%84%B8%ED%8A%B8_%EA%B0%80%EC%A0%B8%EC%98%A4%EA%B8%B0/).
+### Load data
 
-1. Click the **Add Runway Snippet** button at the top of the notebook cell.
-2. Select **Import Dataset**.
-3. Choose the version of the dataset you want to use and click **Save**.
-4. Upon clicking the button, a snippet will be generated in the notebook cell allowing you to browse the files within the selected dataset. Additionally, a dataset parameter with the dataset path as its value will be added.
-5. Utilize the name of the registered dataset parameter in the notebook cell where you want to load the dataset.
+1. Check the path of the dataset file in the file explorer.
+2. Assign the dataset file path to the RUNWAY_DATA_PATH parameter.
+ 
     ```python
     import os
     import pandas as pd
 
+    RUNWAY_DATA_PATH = "/home/jovyan/workspace/examples/tutorial/wind_power_prediction_with_xgboost/dataset"
     dfs = []
     for dirname, _, filenames in os.walk(RUNWAY_DATA_PATH):
         for filename in filenames:
@@ -83,10 +57,12 @@ Construct and save a pipeline for reusing the written model training code for re
             else:
                 raise ValueError("Not valid file type")
             dfs += [d]
+
     df = pd.concat(dfs)
+    df.columns = df.columns.map(lambda x: x.lower())
     ```
 
-#### Preprocess data
+### Preprocess data
 
 1. Split data to X, y.
     ```python
@@ -126,9 +102,10 @@ Construct and save a pipeline for reusing the written model training code for re
     X_train, X_valid, y_train, y_valid = train_test_split(X_df, y_df, test_size=0.2, random_state=2024)
     ```
 
+## Model
 ### Train model
 
-> 📘 You can find guidance on registering Link parameters in the **[Set Pipeline Parameter](https://docs.live.mrxrunway.ai/en/Guide/ml_development/dev_instances/%ED%8C%8C%EC%9D%B4%ED%94%84%EB%9D%BC%EC%9D%B8_%ED%8C%8C%EB%9D%BC%EB%AF%B8%ED%84%B0_%EC%84%A4%EC%A0%95/)**.
+> 📘 You can find guidance on registering Link parameters in the **[Set Pipeline Parameters](https://docs.live.mrxrunway.ai/en/guide/core-features/dev-instances/set-pipeline-parameters/)**.
 
 1. To specify the number of components to use in XGBRegressor, you register the following items with the Link parameter.
 
@@ -172,61 +149,54 @@ Construct and save a pipeline for reusing the written model training code for re
     ```
 
 
-### Upload model
-
-#### Model wrapping class
+### Model wrapping class
 
 1. Write the `RunwayModel` class to be used for API serving.
     ```python
+    import mlflow
     import pandas as pd
 
 
-    class RunwayModel:
+    class RunwayModel(mlflow.pyfunc.PythonModel):
         def __init__(self, xgb_regressor):
             self._regr = xgb_regressor
 
-        def predict(self, X):
-            df, uuid = X.drop(columns=["uuid"]), X[["uuid"]].reset_index(drop=True)
-            uuid = uuid.rename(columns={"uuid": "pred_uuid"})
-            pred = self._regr.predict(df)
+        def predict(self, context, X):
+            pred = self._regr.predict(X)
             activepower_pred = {"activepower": pred}
             pred_df = pd.DataFrame(activepower_pred)
-            return pd.concat([pred_df, uuid], axis=1)
+            return pred_df
     ```
 
 
-#### Upload model
+### Model Registration
 
-> 📘 You can find detailed instructions on how to save the model in the [Upload Model](https://docs.live.mrxrunway.ai/en/Guide/ml_development/dev_instances/%EB%AA%A8%EB%8D%B8_%EC%97%85%EB%A1%9C%EB%93%9C/).
+Register the trained regression model in Runway so that it can be used for inference services.
 
-1. Use the `save model` option from the Runway code snippet to save the model.
-2. Wrap fitted `regr` with `RunwayModel`.
-3. Create a sample input data for the generated code.
-4. Log metric and parameters for uploading model.
+1. Use the Runway platform’s model registration code snippet to register (`log_model`) the trained model and record the related information.
     ```python
+    import mlflow
     import runway
 
-    runway_model = RunwayModel(regr)
+    with mlflow.start_run():
+        runway_model = RunwayModel(regr)
+        input_df = df[X_columns]
+        input_sample = input_df.sample(1)
 
-    input_columns = X_columns + ["uuid"]
-    input_df = df[input_columns]
-    input_sample = input_df.sample(1)
+        mlflow.log_params(params)
+        mlflow.log_metric("valid_mae", mae)
+        mlflow.log_metric("valid_mse", mse)
 
-
-    runway.start_run()
-    runway.log_parameters(params)
-
-    runway.log_metric("valid_mae", mae)
-    runway.log_metric("valid_mse", mse)
-
-    runway.log_model(model_name="my-xgboost-regressor", model=runway_model, input_samples={"predict": input_sample})
-
-    runway.stop_run()
+        runway.log_model(
+            model=runway_model,
+            model_name="my-xgboost-regressor",
+            input_samples={"predict": input_sample},
+        )
     ```
 
 ## Pipeline Configuration and Saving
 
-> 📘 For specific guidance on creating a pipeline, refer to the [Upload Pipeline](https://docs.live.mrxrunway.ai/en/Guide/ml_development/dev_instances/%ED%8C%8C%EC%9D%B4%ED%94%84%EB%9D%BC%EC%9D%B8_%EC%97%85%EB%A1%9C%EB%93%9C/).
+> 📘 For specific guidance on creating a pipeline, refer to the [Create a pipeline](https://docs.live.mrxrunway.ai/en/guide/core-features/dev-instances/create-a-pipeline/).
 
 1.  Write and verify the pipeline in **Link** to ensure it runs smoothly.
 2.  After verifying successful execution, click the **Upload pipeline** button in the Link pipeline panel.

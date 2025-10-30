@@ -1,4 +1,4 @@
-# Object Detection
+# 객체 탐지 (Object Detection)
 
 <h4 align="center">
     <p>
@@ -11,44 +11,17 @@
     <p>The MLOps platform to Let your AI run</p>
 </h3>
 
-## Introduction
+## 소개
 
-Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장합니다.  
-작성한 모델 학습 코드를 재학습에 활용하기 위해 파이프라인을 구성하고 저장합니다.
+이 튜토리얼은 COCO 데이터 세트를 활용하여 객체 탐지를 수행하는 모델을 생성합니다. 작성한 모델 학습 코드를 재학습에 활용하기 위해 파이프라인을 구성하고 저장합니다.
 
 > 📘 빠른 실행을 위해 아래의 주피터 노트북을 활용할 수 있습니다.  
 > 아래의 주피터 노트북을 다운로드 받아 실행할 경우, "my-detection-model" 이름의 모델이 생성되어 Runway에 저장됩니다.
->
+> 
 > **[object detection notebook](https://drive.google.com/uc?export=download&id=1WgdswAqXZtRE-BMJXpiFIBYHV-oboV4F)**
 
 ![link notebook](../../assets/object_detection/link_pipeline.png)
 
-## Runway
-
-> 📘 이 튜토리얼은 COCO 데이터 셋의 일부를 사용해 객체 탐지를 수행하는 모델을 생성합니다.
->
-> COCO 샘플 데이터셋은 아래 항목을 클릭하여 다운로드 할 수 있습니다.  
-> **[coco-sample-dataset.zip](https://drive.google.com/uc?export=download&id=1TrM3y8aRRmaYnIlDI902p73Lsw0XC89B)**
-
-### 데이터 세트 생성하기
-
-> 📘 데이터셋 생성에 관한 자세한 내용은 [공식 문서](https://docs.live.mrxrunway.ai/Guide/ml_development/datasets/dataset-runway/)를 참고하세요.
-
-1. Runway 프로젝트 메뉴에서 데이터셋 페이지로 이동합니다.
-2. 데이터 세트 메뉴에서 데이터 세트 생성 메뉴에 진입합니다. 
-    - 좌측 데이터 세트 목록 상단 `+` 버튼을 클릭합니다.
-    - 초기 화면에서 `Create` 버튼을 클릭합니다.
-3. 다이얼로그에서 생성할 데이터 세트의 이름을 입력 후 `Create` 버튼을 클릭합니다.
-
-### 데이터 세트 버전 생성하기
-
-1. `Versions 섹션`에서  `Create version` 버튼을 클릭합니다. 
-2. 다이얼로그에서 `Local file`을 선택합니다.
-3. 저장하는 데이터셋의 이름과 설명을 입력합니다.
-4. 데이터셋으로 생성할 파일을 파일 탐색기로 선택하거나, Drag&Drop으로 입력합니다.
-5. `Create`를 클릭합니다.
-
-## Link
 
 ### 패키지 설치
 
@@ -57,24 +30,23 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
     !pip install torch torchvision Pillow seaborn torchmetrics
     ```
 
-### 데이터
+## 데이터
 
-#### 데이터 불러오기
+공개된 오픈 데이터 세트인 COCO 데이터 세트의 일부를 사용합니다.
 
-> 📘 데이터 세트 불러오는 방법에 대한 구체적인 가이드는 **[데이터 세트 가져오기](https://docs.live.mrxrunway.ai/Guide/ml_development/dev_instances/%EB%8D%B0%EC%9D%B4%ED%84%B0_%EC%84%B8%ED%8A%B8_%EA%B0%80%EC%A0%B8%EC%98%A4%EA%B8%B0/)** 가이드 에서 확인할 수 있습니다.
+> 📘 이 튜토리얼에서는 사용할 COCO 샘플 데이터 세트는 `./dataset` 경로에 위치하고 있으며, 필요할 경우 아래 링크를 통해 데이터를 다운로드할 수 있습니다.
+> **[coco-sample-dataset.zip](https://drive.google.com/uc?export=download&id=1TrM3y8aRRmaYnIlDI902p73Lsw0XC89B)**
 
-1. 노트북 셀 상단의 **Add Runway Snippet** 버튼을 클릭합니다.
-2. **Import Dataset** 를 선택합니다. 
-3. 사용할 데이터 세트의 버전을 선택하고 **Save** 버튼을 클릭합니다.
-4. 버튼 클릭 시 노트북 셀 내 선택한 데이터 세트 내 파일 목록을 조회할 수 있는 스니펫이 작성되며, 해당 데이터 세트 경로를 값으로 갖는 데이터 세트 파라미터가 추가됩니다.  
-5. 데이터 세트를 불러오고자 하는 노트북 셀에서 등록된 데이터 세트 파라미터의 이름을 입력하여 작업에 활용합니다.
+### 데이터 불러오기
+
+1. 파일 탐색기에서 데이터 세트 파일의 경로를 확인합니다.
+2. RUNWAY_DATA_PATH 파라미터에 데이터 파일의 경로를 할당합니다.
+   
     ```python
     import os
     from pycocotools.coco import COCO
 
-    # RUNWAY_DATA_PATH was added to pipeline parameters.
-    # Pipeline parameters can be used in the cell added as a pipeline component.
-    # RUNWAY_DATA_PATH = "/home/jovyan/workspace/dataset/sample-coco"
+    RUNWAY_DATA_PATH = "/home/jovyan/workspace/examples/tutorial/object_detection/dataset"
     config_file = None
     for dirname, _, filenames in os.walk(RUNWAY_DATA_PATH):
         for filename in filenames:
@@ -87,17 +59,18 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
     coco = COCO(config_file)
     ```
 
-#### 예제 데이터 추출
+### 예제 데이터 추출
 
 1. 샘플 데이터 하나를 추출 후 이미지를 확인합니다.
 
     ```python
     from pathlib import Path
+
     from matplotlib.pyplot import imshow
     from PIL import Image
 
 
-    sample_image_path = Path(RUNWAY_DATA_PATH).parent / "000000000139.jpg"
+    sample_image_path = next(Path(RUNWAY_DATA_PATH).glob("*.jpg"))
     image_filename_list = [sample_image_path]
 
     img = Image.open(sample_image_path)
@@ -106,17 +79,17 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
 
     ![sample image](../../assets/object_detection/sample_image.png)
 
-### 학습
 
-#### COCO 데이터셋
+### COCO 데이터 세트
 
-1. 모델을 학습하기 위해서 pytorch 에서 제공하는 Dataset 을 생성합니다.
+1. 모델을 학습하기 위해서 pytorch에서 제공하는 Dataset을 생성합니다.
 
     ```python
     from PIL import Image
     from pathlib import Path
-    from pycocotools.coco import COCO
+    
     import torch
+    from pycocotools.coco import COCO
     from torch.utils.data import Dataset
     from torchvision import transforms as T
 
@@ -197,9 +170,11 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
     )
     ```
 
+## 모델
+
 ### 모델 선언
 
-1. 학습에 사용할 모델을 선언합니다. 튜토리얼에서는 pytorch 의 `fasterrcnn_resnet50_fpn` 모델을 사용합니다.
+1. 학습에 사용할 모델을 선언합니다. 튜토리얼에서는 pytorch의 `fasterrcnn_resnet50_fpn` 모델을 사용합니다.
     ```python
     import torch
     from torchvision.models.detection import fasterrcnn_resnet50_fpn
@@ -218,7 +193,7 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
 
 ### 모델 학습
 
-> 📘 Link 파라미터 등록 가이드는 **[파이프라인 파라미터 설정](https://docs.live.mrxrunway.ai/Guide/ml_development/dev_instances/%ED%8C%8C%EC%9D%B4%ED%94%84%EB%9D%BC%EC%9D%B8_%ED%8C%8C%EB%9D%BC%EB%AF%B8%ED%84%B0_%EC%84%A4%EC%A0%95/)** 문서에서 확인할 수 있습니다.할 수 있습니다.
+> 📘 Link 파라미터 등록 가이드는 **[파이프라인 파라미터 설정](https://docs.live.mrxrunway.ai/guide/core-features/dev-instances/set-pipeline-parameters/)** 문서에서 확인할 수 있습니다.
 
 1. 모델을 학습할 Epoch 을 설정할 수 있도록 Link 파라미터로 N_EPOCHS 에 1을 등록합니다.
 2. 선언한 모델을 위에서 만든 데이터 로더를 통해 학습하고 모델의 성능을 평가합니다.
@@ -384,7 +359,7 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
 
 #### 샘플 이미지 추론
 
-1. Runway 에서는 API 서빙을 위한 입력과 출력을 Dataframe 형식만 지원하고 있습니다. 이를 위해서 입력 이미지를 bytearray 로 변환해주는 코드를 작성합니다.
+1. Runway에서는 API 서빙을 위한 입력과 출력을 Dataframe 형식만 지원하고 있습니다. 이를 위해서 입력 이미지를 bytearray로 변환해주는 코드를 작성합니다.
 
     ```python
     import base64
@@ -433,26 +408,33 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
     ```
 
 3. 추론 결과를 확인합니다.
+
    ![predict result](../../assets/object_detection/predict_result.png)
 
-### 모델 업로드
+### 모델 등록
 
-> 📘 모델 업로드 방법에 대한 구체적인 가이드는 **[모델 업로드](https://docs.mrxrunway.ai/docs/모델-저장)** 문서에서 확인할 수 있습니다.
+학습이 완료된 모델을 Runway에 등록하여 추론 서비스에서 사용할 수 있도록 합니다.
 
-1. Runway code snippet 의 save model을 사용해 모델을 저장하는 코드를 생성합니다. 그리고 모델 과 관련된 정보를 저장합니다.
+1. Runway 플랫폼의 모델 등록 코드 스니펫을 사용하여, 학습이 완료된 모델을 등록(`log_model`)하고 관련 정보를 기록합니다.
+   
     ```python
+    import mlflow
     import runway
 
     del map_score["classes"]
-    runway.start_run()
-    runway.log_metrics(map_score)
+    with mlflow.start_run():
+        mlflow.log_metrics(map_score)
 
-    runway.log_model(model_name="my-detection-model", model=serve_model, input_samples={'predict': input_sample})
+        runway.log_model(
+            model=serve_model,
+            input_samples={"predict": input_sample},
+            model_name="my-detection-model",
+    )
     ```
 
 ## 파이프라인 구성 및 저장
 
-> 📘 파이프라인 생성 방법에 대한 구체적인 가이드는 **[파이프라인 생성](https://dash.readme.com/project/makinarocks-runway/docs/파이프라인-생성)** 문서에서 확인할 수 있습니다.
+> 📘 파이프라인 생성 방법에 대한 구체적인 가이드는 **[파이프라인 구성](https://docs.live.mrxrunway.ai/guide/core-features/dev-instances/create-a-pipeline/)** 문서에서 확인할 수 있습니다.
 
 1. **Link**에서 파이프라인을 작성하고 정상 실행 여부를 확인합니다.
 2. 정상 실행 확인 후, Link pipeline 패널의 **Upload pipeline** 버튼을 클릭합니다.
@@ -465,7 +447,7 @@ Runway에 포함된 Link를 사용하여 이미지 모델을 학습하고 저장
 
 ## 모델 배포
 
-> 📘 모델 배포 방법에 대한 구체적인 가이드는 **[모델 배포](https://docs.live.mrxrunway.ai/Guide/ml_serving/model_deployments/%EB%AA%A8%EB%8D%B8_%EB%B0%B0%ED%8F%AC/)** 문서에서 확인할 수 있습니다.
+> 📘 모델 배포 방법에 대한 구체적인 가이드는 **[모델 배포](https://docs.live.mrxrunway.ai/guide/core-features/inference-services/deploying-models/)** 문서에서 확인할 수 있습니다.
 
 ## 데모 사이트
 
