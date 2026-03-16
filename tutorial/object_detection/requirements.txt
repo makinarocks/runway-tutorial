@@ -3,3 +3,5 @@ torchvision
 torchmetrics
 Pillow
 seaborn
+--no-binary pycocotools
+pycocotools
