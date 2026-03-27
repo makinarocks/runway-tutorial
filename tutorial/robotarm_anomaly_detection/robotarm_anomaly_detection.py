@@ -84,8 +84,8 @@ runway.start_run()
 runway.log_parameters(parameters)
 
 # log metric
-runway.log_metric("mean_train_recon_err", mean_train_recon_err)
-runway.log_metric("mean_valid_recon_err", mean_valid_recon_err)
+runway.log_metric("mean_train_recon_err", mean_train_recon_err.item())
+runway.log_metric("mean_valid_recon_err", mean_valid_recon_err.item())
 
 # log model
 input_sample = proc_df.sample(1)
